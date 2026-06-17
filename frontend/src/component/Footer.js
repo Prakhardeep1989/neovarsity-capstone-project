@@ -53,14 +53,15 @@ const Footer = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-start sm:items-center md:items-end lg:items-center gap-3 md:gap-4 shrink-0">
-            <div className="inline-flex items-center gap-2 rounded-md border border-emerald-700/50 bg-emerald-950/50 px-3 py-1.5 text-emerald-300">
+            <div className="hidden sm:inline-flex items-center gap-2 rounded-md border border-emerald-700/50 bg-emerald-950/50 px-3 py-1.5 text-emerald-300">
               <FaCertificate size={15} aria-hidden="true" />
               <span className="text-sm font-semibold whitespace-nowrap">
                 {fssaiLabel}
               </span>
             </div>
+       
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 justify-center sm:justify-start w-full">
               {socialItems.map(({ label, href, icon: Icon }) => (
                 <a
                   key={label}
@@ -74,6 +75,7 @@ const Footer = () => {
                 </a>
               ))}
             </div>
+       
           </div>
         </div>
       </Wrapper>

@@ -101,7 +101,7 @@ const Home = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex flex-col gap-1 rounded-lg bg-white/15 px-4 py-2 text-white self-start sm:self-center">
+              <div className="hidden sm:flex flex-col gap-1 rounded-lg bg-white/15 px-4 py-2 text-white self-start sm:self-center">
                 <div className="flex items-center gap-2">
                   <FaClock size={16} />
                   <span className="text-sm md:text-base font-bold">
@@ -112,6 +112,7 @@ const Home = () => {
                   {BUSINESS_INFO.closedDay}
                 </span>
               </div>
+         
             </div>
           </div>
         </section>
