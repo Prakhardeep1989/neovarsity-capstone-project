@@ -1,11 +1,16 @@
 const express = require("express");
-const cors = require("cors");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv").config();
 const Razorpay = require("razorpay");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const createAuthMiddleware = require("./middleware/auth");
+const corsMiddleware = require("./middleware/cors");
+const {
+  generalLimiter,
+  authLimiter,
+  contactLimiter,
+} = require("./middleware/rateLimit");
 const orderModel = require("./models/Order");
 const createOrderRoutes = require("./routes/orderRoutes");
 const createPaymentController = require("./controllers/paymentController");
@@ -18,22 +23,8 @@ const razorpay = new Razorpay({
 
 const app = express();
 
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  "http://localhost:3000",
-].filter(Boolean);
-
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-        return;
-      }
-      callback(new Error("Not allowed by CORS"));
-    },
-  })
-);
+app.use(corsMiddleware);
+app.use(generalLimiter);
 
 const paymentController = createPaymentController({ orderModel, razorpay });
 
@@ -158,13 +149,13 @@ const orderRoutes = createOrderRoutes({
 });
 app.use("/api/orders", orderRoutes);
 
-app.post("/api/contact", submitContact);
+app.post("/api/contact", contactLimiter, submitContact);
 
 app.get("/", (req, res) => {
   res.send("HOMELY Meals API is running");
 });
 
-app.post("/signup", async (req, res) => {
+app.post("/signup", authLimiter, async (req, res) => {
   try {
     const { email, password, confirmPassword, firstName, lastName, image } =
       req.body;
@@ -201,7 +192,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.post("/login", async (req, res) => {
+app.post("/login", authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
