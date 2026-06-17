@@ -58,6 +58,8 @@ const Header = () => {
               src={BRAND_LOGO}
               alt="HOMELY Meals"
               className="rounded-full h-10 w-10 md:h-12 md:w-12 object-cover border border-orange-100"
+              loading="lazy"
+              decoding="async"
             />
             <div className="hidden sm:block min-w-0">
               <h2 className="font-bold text-lg md:text-xl text-stone-900 leading-tight truncate">

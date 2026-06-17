@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addCartItem } from "../redux/productSlide";
 import { getProductImage } from "../utility/productImages";
 import { formatCategory, formatStatus } from "../utility/productConstants";
+import FoodImage from "./FoodImage";
 
 const ProductCard = ({ product, onEdit, onDelete }) => {
   const dispatch = useDispatch();
@@ -32,14 +33,13 @@ const ProductCard = ({ product, onEdit, onDelete }) => {
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         className="flex flex-col flex-1"
       >
-        <div className="relative h-36 bg-slate-100">
-          <img
+        <div className="relative h-36 bg-orange-50 overflow-hidden rounded-t-lg">
+          <FoodImage
             src={imageSrc}
             alt={name}
             className="h-full w-full object-cover"
-            onError={(e) => {
-              e.target.src = getProductImage("", category);
-            }}
+            rounded="rounded-t-lg"
+            fallbackSrc={getProductImage("", category)}
           />
           {isAdmin && (
             <div className="absolute top-2 left-2 flex flex-wrap gap-1">

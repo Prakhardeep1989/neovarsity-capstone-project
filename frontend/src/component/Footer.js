@@ -23,7 +23,9 @@ const Footer = () => {
             <img
               src={HOMELY_LOGO}
               alt={`${parentCompany.name} — ${parentCompany.tagline}`}
-              className="h-16 md:h-[4.5rem] w-auto shrink-0 object-contain"
+              className="h-16 md:h-[4.5rem] w-auto shrink-0 object-contain rounded-lg"
+              loading="lazy"
+              decoding="async"
             />
             <div className="text-left min-w-0">
               <p className="text-white font-bold text-base md:text-lg leading-tight">

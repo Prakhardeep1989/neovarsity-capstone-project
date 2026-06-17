@@ -1,11 +1,12 @@
 import { useState } from "react";
-import loginSignupImage from "../assest/login-animation.gif";
+import { LOGIN_IMAGE } from "../utility/productImages";
 import { BiShow, BiHide } from "react-icons/bi";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { loginRedux } from "../redux/userSlice";
 import PageLayout from "../component/PageLayout";
+import FoodImage from "../component/FoodImage";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -71,7 +72,14 @@ const Login = () => {
     <PageLayout centered>
       <div className="w-full max-w-sm bg-white flex flex-col p-4 rounded-lg shadow">
         <div className="w-20 h-20 overflow-hidden rounded-full drop-shadow-md shadow-md m-auto relative">
-          <img src={loginSignupImage} alt="Login" className="w-full h-full object-cover" />
+          <FoodImage
+            src={LOGIN_IMAGE}
+            alt="Login"
+            className="h-full w-full object-cover"
+            rounded="rounded-full"
+            priority
+            lazy={false}
+          />
         </div>
         <form className="w-full py-3 flex flex-col" onSubmit={handleSubmit}>
           <label htmlFor="email">Email</label>

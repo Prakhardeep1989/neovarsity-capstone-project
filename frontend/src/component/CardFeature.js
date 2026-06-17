@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { addCartItem } from "../redux/productSlide";
 import { getProductImage } from "../utility/productImages";
 import { formatCategory, formatStatus } from "../utility/productConstants";
+import FoodImage from "./FoodImage";
 
 const CardFeature = ({
   image,
@@ -39,14 +40,13 @@ const CardFeature = ({
             to={`/menu/${id}`}
             onClick={() => window.scrollTo({ top: "0", behavior: "smooth" })}
           >
-            <div className="relative h-28 flex flex-col justify-center items-center">
-              <img
+            <div className="relative h-28 w-full overflow-hidden rounded-lg">
+              <FoodImage
                 src={imageSrc}
                 alt={name}
-                className="h-full object-cover"
-                onError={(e) => {
-                  e.target.src = getProductImage("", category);
-                }}
+                className="h-full w-full object-cover"
+                rounded="rounded-lg"
+                fallbackSrc={getProductImage("", category)}
               />
               {isAdmin && (
                 <div className="absolute top-0 left-0 flex flex-wrap gap-1 p-1">

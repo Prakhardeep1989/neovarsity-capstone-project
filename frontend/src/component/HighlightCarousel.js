@@ -8,6 +8,7 @@ import {
   FaCreditCard,
   FaRupeeSign,
 } from "react-icons/fa";
+import FoodImage from "./FoodImage";
 
 const ICON_MAP = {
   kitchen: FaUtensils,
@@ -16,33 +17,6 @@ const ICON_MAP = {
   delivery: FaMotorcycle,
   payment: FaCreditCard,
   price: FaRupeeSign,
-};
-
-const ImageWithFallback = ({ src, alt, className }) => {
-  const [failed, setFailed] = useState(false);
-
-  if (failed) {
-    return (
-      <div
-        className={`${className} bg-gradient-to-br from-amber-100 to-orange-200 flex items-center justify-center`}
-        aria-label={alt}
-      >
-        <span className="text-amber-700/60 text-sm font-medium px-4 text-center">
-          {alt}
-        </span>
-      </div>
-    );
-  }
-
-  return (
-    <img
-      src={src}
-      alt={alt}
-      className={className}
-      onError={() => setFailed(true)}
-      loading="lazy"
-    />
-  );
 };
 
 const HighlightCarousel = ({ items }) => {
@@ -127,10 +101,13 @@ const HighlightCarousel = ({ items }) => {
               key={item.title}
               className="snap-start shrink-0 w-[85%] sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-1rem)] bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden"
             >
-              <ImageWithFallback
+              <FoodImage
                 src={item.image}
                 alt={item.title}
                 className="w-full h-40 md:h-44 object-cover"
+                rounded="rounded-t-2xl"
+                fallbackSrc=""
+                showPlaceholderOnError
               />
               <div className="p-4 md:p-5">
                 <div className="flex items-center gap-2 mb-2">

@@ -6,6 +6,7 @@ import { addCartItem } from "../redux/productSlide";
 import { getProductImage } from "../utility/productImages";
 import { formatCategory, formatStatus } from "../utility/productConstants";
 import PageLayout from "../component/PageLayout";
+import FoodImage from "../component/FoodImage";
 
 const Menu = () => {
   const { filterby } = useParams();
@@ -64,13 +65,12 @@ const Menu = () => {
     <PageLayout>
       <div className="w-full max-w-4xl mx-auto md:flex bg-white rounded-lg shadow">
           <div className="max-w-sm overflow-hidden w-full p-5">
-            <img
+            <FoodImage
               src={imageSrc}
               alt={productDisplay.name}
-              className="hover:scale-105 transition-all h-full w-full object-cover rounded"
-              onError={(e) => {
-                e.target.src = getProductImage("", productDisplay.category);
-              }}
+              className="h-full min-h-[240px] w-full object-cover"
+              rounded="rounded-xl"
+              fallbackSrc={getProductImage("", productDisplay.category)}
             />
           </div>
 

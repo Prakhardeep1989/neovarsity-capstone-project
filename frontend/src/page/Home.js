@@ -2,32 +2,10 @@ import React from "react";
 import { Link } from "react-router-dom";
 import HighlightCarousel from "../component/HighlightCarousel";
 import PageLayout from "../component/PageLayout";
+import FoodImage from "../component/FoodImage";
 import { LANDING_HIGHLIGHTS, LANDING_IMAGES } from "../utility/landingImages";
 import { BUSINESS_INFO } from "../utility/businessInfo";
 import { FaBookOpen, FaShoppingBag, FaSmile, FaMotorcycle, FaClock } from "react-icons/fa";
-
-const HeroImage = () => {
-  const [failed, setFailed] = React.useState(false);
-
-  if (failed) {
-    return (
-      <div className="w-full h-64 md:h-80 lg:h-96 rounded-2xl bg-gradient-to-br from-orange-100 via-amber-50 to-red-100 flex items-center justify-center border border-orange-100">
-        <p className="text-stone-500 text-sm px-6 text-center">
-          Place hero image at public/assets/images/hero-meal.jpg
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <img
-      src={LANDING_IMAGES.hero}
-      alt="Fresh home-style Indian meal"
-      className="w-full h-64 md:h-80 lg:h-96 object-cover rounded-2xl shadow-md border border-orange-100"
-      onError={() => setFailed(true)}
-    />
-  );
-};
 
 const HOW_IT_WORKS = [
   {
@@ -92,7 +70,14 @@ const Home = () => {
               </div>
             </div>
             <div className="w-full lg:w-1/2">
-              <HeroImage />
+              <FoodImage
+                src={LANDING_IMAGES.hero}
+                alt="Fresh home-style Indian thali meal"
+                className="w-full h-64 md:h-80 lg:h-96 object-cover"
+                rounded="rounded-2xl"
+                priority
+                lazy={false}
+              />
             </div>
           </div>
         </section>

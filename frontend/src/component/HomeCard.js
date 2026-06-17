@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import { getProductImage } from "../utility/productImages";
 import { formatCategory } from "../utility/productConstants";
+import FoodImage from "./FoodImage";
 
 const HomeCard = ({ name, image, category, price, loading, id }) => {
   const imageSrc = getProductImage(image, category);
@@ -14,14 +15,13 @@ const HomeCard = ({ name, image, category, price, loading, id }) => {
             to={`/menu/${id}`}
             onClick={() => window.scrollTo({ top: "0", behavior: "smooth" })}
           >
-            <div className="w-40 min-h-[150px]">
-              <img
+            <div className="w-40 min-h-[150px] overflow-hidden rounded-lg">
+              <FoodImage
                 src={imageSrc}
                 alt={name}
-                className="h-full w-full object-cover"
-                onError={(e) => {
-                  e.target.src = getProductImage("", category);
-                }}
+                className="h-full w-full min-h-[150px] object-cover"
+                rounded="rounded-lg"
+                fallbackSrc={getProductImage("", category)}
               />
             </div>
             <h3 className="font-semibold text-slate-600 text-center capitalize text-lg">

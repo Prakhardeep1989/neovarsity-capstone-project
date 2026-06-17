@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ImagetoBase64 } from "../utility/ImagetoBase64";
 import { toast } from "react-hot-toast";
 import PageLayout from "../component/PageLayout";
+import FoodImage from "../component/FoodImage";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -86,10 +87,13 @@ const Signup = () => {
       <div className="w-full max-w-sm bg-white flex flex-col p-4 rounded-lg shadow">
         {/* <h1 className="text-center text-2xl font-bold">Sign up</h1> */}
         <div className="w-20 h-20 overflow-hidden rounded-full drop-shadow-md shadow-md m-auto relative">
-          <img
+          <FoodImage
             src={data.image ? data.image : LOGIN_IMAGE}
             alt="Profile"
-            className="w-full h-full object-cover"
+            className="h-full w-full object-cover"
+            rounded="rounded-full"
+            priority
+            lazy={false}
           />
           <label htmlFor="profileImage">
             <div className="absolute bottom-0 h-1/3  bg-slate-500 bg-opacity-50 w-full text-center cursor-pointer">

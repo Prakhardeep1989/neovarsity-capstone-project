@@ -9,6 +9,7 @@ import {
 } from "../redux/productSlide";
 
 import { getProductImage } from "../utility/productImages";
+import FoodImage from "./FoodImage";
 
 const CartProduct = ({ id, name, image, category, qty, total, price }) => {
   const dispatch = useDispatch();
@@ -16,14 +17,13 @@ const CartProduct = ({ id, name, image, category, qty, total, price }) => {
 
   return (
     <div className="bg-slate-200 p-2 flex gap-4 rounded border border-slate-300">
-      <div className="p-3 bg-white rounded overflow-hidden">
-        <img
+      <div className="p-2 bg-white rounded-lg overflow-hidden">
+        <FoodImage
           src={imageSrc}
           alt={name}
           className="h-28 w-40 object-cover"
-          onError={(e) => {
-            e.target.src = getProductImage("", category);
-          }}
+          rounded="rounded-lg"
+          fallbackSrc={getProductImage("", category)}
         />
       </div>
       <div className="flex flex-col gap-1 w-full">

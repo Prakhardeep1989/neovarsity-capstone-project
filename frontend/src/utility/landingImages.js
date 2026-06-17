@@ -1,27 +1,13 @@
-/**
- * Landing page static images.
- * Place JPG files in: frontend/public/assets/images/
- *
- * Required files:
- *   - hygienic-kitchen.jpg
- *   - expert-chefs.jpg
- *   - fresh-vegetables.jpg
- *   - fast-delivery.jpg
- *   - digital-payments.jpg
- *   - affordable-prices.jpg
- *   - hero-meal.jpg (optional hero background)
- */
-
-const ASSETS_BASE = `${process.env.PUBLIC_URL || ""}/assets/images`;
+import { FOOD_SERVICE_IMAGES } from "./foodServiceImages";
 
 export const LANDING_IMAGES = {
-  hero: `${ASSETS_BASE}/hero-meal.jpg`,
-  hygienicKitchen: `${ASSETS_BASE}/hygienic-kitchen.jpg`,
-  expertChefs: `${ASSETS_BASE}/expert-chefs.jpg`,
-  freshVegetables: `${ASSETS_BASE}/fresh-vegetables.jpg`,
-  fastDelivery: `${ASSETS_BASE}/fast-delivery.jpg`,
-  digitalPayments: `${ASSETS_BASE}/digital-payments.jpg`,
-  affordablePrices: `${ASSETS_BASE}/affordable-prices.jpg`,
+  hero: FOOD_SERVICE_IMAGES.hero,
+  hygienicKitchen: FOOD_SERVICE_IMAGES.hygienicKitchen,
+  expertChefs: FOOD_SERVICE_IMAGES.expertChefs,
+  freshVegetables: FOOD_SERVICE_IMAGES.freshVegetables,
+  fastDelivery: FOOD_SERVICE_IMAGES.fastDelivery,
+  digitalPayments: FOOD_SERVICE_IMAGES.digitalPayments,
+  affordablePrices: FOOD_SERVICE_IMAGES.affordablePrices,
 };
 
 export const LANDING_HIGHLIGHTS = [

@@ -2,15 +2,17 @@ import React from "react";
 import { ERROR_404_IMAGE } from "../utility/productImages";
 import { Link } from "react-router-dom";
 import PageLayout from "../component/PageLayout";
+import FoodImage from "../component/FoodImage";
 
 const ErragePage = () => {
   return (
     <PageLayout centered>
       <div className="flex flex-col items-center gap-6">
-        <img
+        <FoodImage
           src={ERROR_404_IMAGE}
-          alt="404"
-          className="max-w-xl w-full rounded-lg shadow-xl"
+          alt="Page not found"
+          className="max-w-xl w-full h-72 md:h-96 object-cover"
+          rounded="rounded-2xl"
         />
         <Link
           to="/"
