@@ -58,6 +58,42 @@ const compareValues = (a, b, sortDir) => {
   return 0;
 };
 
+const sortOrders = (orders, sortField, sortDir) => {
+  const sorted = [...orders];
+  sorted.sort((a, b) => {
+    switch (sortField) {
+      case "customer":
+        return compareValues(
+          getOrderCustomerName(a).toLowerCase(),
+          getOrderCustomerName(b).toLowerCase(),
+          sortDir
+        );
+      case "totalAmount":
+        return compareValues(a.totalAmount ?? 0, b.totalAmount ?? 0, sortDir);
+      case "payment":
+        return compareValues(
+          (a.payment?.status || "").toLowerCase(),
+          (b.payment?.status || "").toLowerCase(),
+          sortDir
+        );
+      case "status":
+        return compareValues(
+          (a.status || "").toLowerCase(),
+          (b.status || "").toLowerCase(),
+          sortDir
+        );
+      case "createdAt":
+      default:
+        return compareValues(
+          new Date(a.createdAt).getTime(),
+          new Date(b.createdAt).getTime(),
+          sortDir
+        );
+    }
+  });
+  return sorted;
+};
+
 const SortableHeader = ({ label, field, sortField, sortDir, onSort }) => {
   const active = sortField === field;
   return (
@@ -76,89 +112,94 @@ const SortableHeader = ({ label, field, sortField, sortDir, onSort }) => {
   );
 };
 
-const CustomerOrders = ({ orders }) => {
-  if (!orders.length) {
-    return (
-      <div className="text-center py-16 text-slate-500">
-        <p className="text-lg">You have no orders yet.</p>
-        <a href="/menu" className="text-red-500 underline mt-2 inline-block">
-          Browse Menu
-        </a>
-      </div>
-    );
+const DeliveryDetailsCell = ({ delivery }) => (
+  <div className="flex flex-col gap-0.5 text-slate-600">
+    {delivery?.fullName && (
+      <span className="font-medium text-slate-800">{delivery.fullName}</span>
+    )}
+    {delivery?.phone && <span className="text-xs">{delivery.phone}</span>}
+    <span className="text-xs leading-relaxed">
+      {formatDeliveryAddress(delivery) || "—"}
+    </span>
+    {delivery?.landmark && (
+      <span className="text-xs text-slate-400">Landmark: {delivery.landmark}</span>
+    )}
+  </div>
+);
+
+const OrderItemsCell = ({ items }) => {
+  if (!items?.length) {
+    return <span className="text-slate-400">—</span>;
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {orders.map((order) => (
-        <div
-          key={order._id}
-          className="bg-white rounded-lg shadow p-4 flex flex-col gap-3"
-        >
-          <div className="flex flex-wrap justify-between gap-2">
-            <div>
-              <p className="text-xs text-slate-500">Order ID</p>
-              <p className="font-mono text-sm font-semibold">
-                #{String(order._id).slice(-8).toUpperCase()}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-slate-500">{formatOrderDate(order.createdAt)}</p>
-              <div className="flex gap-2 mt-1 justify-end">
-                <span
-                  className={`text-xs px-2 py-0.5 rounded-full text-white ${statusColor(order.status)}`}
-                >
-                  {formatOrderStatus(order.status)}
-                </span>
-                <span
-                  className={`text-xs px-2 py-0.5 rounded-full text-white ${statusColor(order.payment?.status)}`}
-                >
-                  {formatPaymentStatus(order.payment?.status)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <p className="text-xs text-slate-500 mb-1">Items</p>
-            {order.items?.map((item, idx) => (
-              <div key={idx} className="flex justify-between text-sm py-1 border-b border-slate-100">
-                <span>
-                  {item.name}{" "}
-                  <span className="text-slate-400">× {item.quantity}</span>
-                </span>
-                <span className="font-medium">₹{item.itemTotal}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex justify-between items-center pt-1">
-            <div>
-              <p className="text-xs text-slate-500">Delivery</p>
-              <p className="text-sm text-slate-600">
-                {formatDeliveryAddress(order.deliveryDetails)}
-              </p>
-            </div>
-            <p className="font-bold text-lg">
-              <span className="text-red-500">₹</span>
-              {order.totalAmount}
-            </p>
-          </div>
+    <div className="flex flex-col gap-1 min-w-[160px]">
+      {items.map((item, idx) => (
+        <div key={idx} className="text-xs text-slate-700">
+          {item.name}{" "}
+          <span className="text-slate-400">× {item.quantity}</span>
         </div>
       ))}
     </div>
   );
 };
 
-const AdminOrders = ({ orders, onStatusUpdate }) => {
+const DateFilterBar = ({
+  dateFrom,
+  dateTo,
+  onDateFromChange,
+  onDateToChange,
+  onClear,
+  showingCount,
+  totalCount,
+  idPrefix,
+}) => (
+  <div className="bg-white rounded-lg shadow p-4 flex flex-wrap items-end gap-4">
+    <div>
+      <label htmlFor={`${idPrefix}-date-from`} className="block text-xs text-slate-500 mb-1">
+        From date
+      </label>
+      <input
+        id={`${idPrefix}-date-from`}
+        type="date"
+        value={dateFrom}
+        onChange={(e) => onDateFromChange(e.target.value)}
+        className="border border-slate-200 rounded px-2 py-1.5 text-sm"
+      />
+    </div>
+    <div>
+      <label htmlFor={`${idPrefix}-date-to`} className="block text-xs text-slate-500 mb-1">
+        To date
+      </label>
+      <input
+        id={`${idPrefix}-date-to`}
+        type="date"
+        value={dateTo}
+        min={dateFrom || undefined}
+        onChange={(e) => onDateToChange(e.target.value)}
+        className="border border-slate-200 rounded px-2 py-1.5 text-sm"
+      />
+    </div>
+    {(dateFrom || dateTo) && (
+      <button
+        type="button"
+        onClick={onClear}
+        className="text-sm text-red-600 hover:text-red-700 px-2 py-1.5"
+      >
+        Clear dates
+      </button>
+    )}
+    <p className="text-sm text-slate-500 ml-auto">
+      Showing {showingCount} of {totalCount} orders
+    </p>
+  </div>
+);
+
+const useOrdersTable = (orders) => {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [sortField, setSortField] = useState("createdAt");
   const [sortDir, setSortDir] = useState("desc");
-
-  const handleStatusChange = async (orderId, newStatus) => {
-    await onStatusUpdate(orderId, newStatus);
-  };
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -176,96 +217,102 @@ const AdminOrders = ({ orders, onStatusUpdate }) => {
     );
   }, [orders, dateFrom, dateTo]);
 
-  const sortedOrders = useMemo(() => {
-    const sorted = [...filteredOrders];
-    sorted.sort((a, b) => {
-      switch (sortField) {
-        case "customer":
-          return compareValues(
-            getOrderCustomerName(a).toLowerCase(),
-            getOrderCustomerName(b).toLowerCase(),
-            sortDir
-          );
-        case "totalAmount":
-          return compareValues(a.totalAmount ?? 0, b.totalAmount ?? 0, sortDir);
-        case "payment":
-          return compareValues(
-            (a.payment?.status || "").toLowerCase(),
-            (b.payment?.status || "").toLowerCase(),
-            sortDir
-          );
-        case "status":
-          return compareValues(
-            (a.status || "").toLowerCase(),
-            (b.status || "").toLowerCase(),
-            sortDir
-          );
-        case "createdAt":
-        default:
-          return compareValues(
-            new Date(a.createdAt).getTime(),
-            new Date(b.createdAt).getTime(),
-            sortDir
-          );
-      }
-    });
-    return sorted;
-  }, [filteredOrders, sortField, sortDir]);
+  const sortedOrders = useMemo(
+    () => sortOrders(filteredOrders, sortField, sortDir),
+    [filteredOrders, sortField, sortDir]
+  );
 
   const clearDateFilter = () => {
     setDateFrom("");
     setDateTo("");
   };
 
+  return {
+    dateFrom,
+    setDateFrom,
+    dateTo,
+    setDateTo,
+    sortField,
+    sortDir,
+    handleSort,
+    sortedOrders,
+    clearDateFilter,
+  };
+};
+
+const AdminActionsCell = ({ order, onStatusChange }) => {
+  if (!getAdminStatusOptions(order.status).length) return null;
+
+  return (
+    <div className="flex flex-col gap-2 min-w-[140px]">
+      {getAdminStatusOptions(order.status).includes("DELIVERED") && (
+        <button
+          type="button"
+          className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1.5 rounded font-medium whitespace-nowrap"
+          onClick={() => onStatusChange(order._id, "DELIVERED")}
+        >
+          Mark Delivered
+        </button>
+      )}
+      <select
+        className="bg-slate-100 border border-slate-200 rounded px-2 py-1 text-xs"
+        value=""
+        onChange={(e) => {
+          if (e.target.value) {
+            onStatusChange(order._id, e.target.value);
+            e.target.value = "";
+          }
+        }}
+      >
+        <option value="">More actions…</option>
+        {getAdminStatusOptions(order.status)
+          .filter((s) => s !== "DELIVERED")
+          .map((s) => (
+            <option key={s} value={s}>
+              {formatOrderStatus(s)}
+            </option>
+          ))}
+      </select>
+    </div>
+  );
+};
+
+const OrdersTable = ({ orders, isAdmin, onStatusUpdate, emptyMessage, emptyLink }) => {
+  const {
+    dateFrom,
+    setDateFrom,
+    dateTo,
+    setDateTo,
+    sortField,
+    sortDir,
+    handleSort,
+    sortedOrders,
+    clearDateFilter,
+  } = useOrdersTable(orders);
+
+  const idPrefix = isAdmin ? "admin" : "customer";
+
   if (!orders.length) {
     return (
       <div className="text-center py-16 text-slate-500">
-        <p className="text-lg">No orders yet.</p>
+        <p className="text-lg">{emptyMessage}</p>
+        {emptyLink}
       </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="bg-white rounded-lg shadow p-4 flex flex-wrap items-end gap-4">
-        <div>
-          <label htmlFor="date-from" className="block text-xs text-slate-500 mb-1">
-            From date
-          </label>
-          <input
-            id="date-from"
-            type="date"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            className="border border-slate-200 rounded px-2 py-1.5 text-sm"
-          />
-        </div>
-        <div>
-          <label htmlFor="date-to" className="block text-xs text-slate-500 mb-1">
-            To date
-          </label>
-          <input
-            id="date-to"
-            type="date"
-            value={dateTo}
-            min={dateFrom || undefined}
-            onChange={(e) => setDateTo(e.target.value)}
-            className="border border-slate-200 rounded px-2 py-1.5 text-sm"
-          />
-        </div>
-        {(dateFrom || dateTo) && (
-          <button
-            type="button"
-            onClick={clearDateFilter}
-            className="text-sm text-red-600 hover:text-red-700 px-2 py-1.5"
-          >
-            Clear dates
-          </button>
-        )}
-        <p className="text-sm text-slate-500 ml-auto">
-          Showing {sortedOrders.length} of {orders.length} orders
-        </p>
-      </div>
+      <DateFilterBar
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        onDateFromChange={setDateFrom}
+        onDateToChange={setDateTo}
+        onClear={clearDateFilter}
+        showingCount={sortedOrders.length}
+        totalCount={orders.length}
+        idPrefix={idPrefix}
+      />
 
       {sortedOrders.length === 0 ? (
         <div className="text-center py-16 text-slate-500 bg-white rounded-lg shadow">
@@ -280,19 +327,21 @@ const AdminOrders = ({ orders, onStatusUpdate }) => {
         </div>
       ) : (
         <div className="overflow-x-auto bg-white rounded-lg shadow">
-          <table className="w-full text-sm min-w-[1100px]">
+          <table className="w-full text-sm min-w-[1050px]">
             <thead className="bg-slate-800 text-white">
               <tr>
                 <th className="px-3 py-3 text-left">Order ID</th>
-                <SortableHeader
-                  label="Customer"
-                  field="customer"
-                  sortField={sortField}
-                  sortDir={sortDir}
-                  onSort={handleSort}
-                />
-                <th className="px-3 py-3 text-left">Email</th>
+                {isAdmin && (
+                  <SortableHeader
+                    label="Customer"
+                    field="customer"
+                    sortField={sortField}
+                    sortDir={sortDir}
+                    onSort={handleSort}
+                  />
+                )}
                 <th className="px-3 py-3 text-left min-w-[200px]">Delivery Details</th>
+                <th className="px-3 py-3 text-left min-w-[180px]">Items</th>
                 <SortableHeader
                   label="Amount"
                   field="totalAmount"
@@ -321,98 +370,58 @@ const AdminOrders = ({ orders, onStatusUpdate }) => {
                   sortDir={sortDir}
                   onSort={handleSort}
                 />
-                <th className="px-3 py-3 text-left">Actions</th>
+                {isAdmin && <th className="px-3 py-3 text-left">Actions</th>}
               </tr>
             </thead>
             <tbody>
-              {sortedOrders.map((order) => {
-                const delivery = order.deliveryDetails;
-                return (
-                  <tr key={order._id} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="px-3 py-3 font-mono align-top">
-                      #{String(order._id).slice(-8).toUpperCase()}
-                    </td>
-                    <td className="px-3 py-3 align-top">{getOrderCustomerName(order)}</td>
-                    <td className="px-3 py-3 text-slate-600 align-top">
-                      {order.userDetails?.email || order.user?.email}
-                    </td>
-                    <td className="px-3 py-3 align-top min-w-[200px]">
-                      <div className="flex flex-col gap-0.5 text-slate-600">
-                        {delivery?.fullName && (
-                          <span className="font-medium text-slate-800">
-                            {delivery.fullName}
-                          </span>
-                        )}
-                        {delivery?.phone && (
-                          <span className="text-xs">{delivery.phone}</span>
-                        )}
-                        <span className="text-xs leading-relaxed">
-                          {formatDeliveryAddress(delivery) || "—"}
+              {sortedOrders.map((order) => (
+                <tr key={order._id} className="border-b border-slate-100 hover:bg-slate-50">
+                  <td className="px-3 py-3 font-mono align-top">
+                    #{String(order._id).slice(-8).toUpperCase()}
+                  </td>
+                  {isAdmin && (
+                    <td className="px-3 py-3 align-top">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-medium text-slate-800">
+                          {getOrderCustomerName(order)}
                         </span>
-                        {delivery?.landmark && (
-                          <span className="text-xs text-slate-400">
-                            Landmark: {delivery.landmark}
-                          </span>
-                        )}
+                        <span className="text-xs text-slate-500 break-all">
+                          {order.userDetails?.email || order.user?.email}
+                        </span>
                       </div>
                     </td>
-                    <td className="px-3 py-3 font-semibold align-top">
-                      ₹{order.totalAmount}
-                    </td>
+                  )}
+                  <td className="px-3 py-3 align-top min-w-[200px]">
+                    <DeliveryDetailsCell delivery={order.deliveryDetails} />
+                  </td>
+                  <td className="px-3 py-3 align-top min-w-[180px]">
+                    <OrderItemsCell items={order.items} />
+                  </td>
+                  <td className="px-3 py-3 font-semibold align-top">₹{order.totalAmount}</td>
+                  <td className="px-3 py-3 align-top">
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full text-white ${statusColor(order.payment?.status)}`}
+                    >
+                      {formatPaymentStatus(order.payment?.status)}
+                    </span>
+                  </td>
+                  <td className="px-3 py-3 align-top">
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full text-white ${statusColor(order.status)}`}
+                    >
+                      {formatOrderStatus(order.status)}
+                    </span>
+                  </td>
+                  <td className="px-3 py-3 text-slate-500 whitespace-nowrap align-top">
+                    {formatOrderDate(order.createdAt)}
+                  </td>
+                  {isAdmin && (
                     <td className="px-3 py-3 align-top">
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded-full text-white ${statusColor(order.payment?.status)}`}
-                      >
-                        {formatPaymentStatus(order.payment?.status)}
-                      </span>
+                      <AdminActionsCell order={order} onStatusChange={onStatusUpdate} />
                     </td>
-                    <td className="px-3 py-3 align-top">
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded-full text-white ${statusColor(order.status)}`}
-                      >
-                        {formatOrderStatus(order.status)}
-                      </span>
-                    </td>
-                    <td className="px-3 py-3 text-slate-500 whitespace-nowrap align-top">
-                      {formatOrderDate(order.createdAt)}
-                    </td>
-                    <td className="px-3 py-3 align-top">
-                      {getAdminStatusOptions(order.status).length > 0 && (
-                        <div className="flex flex-col gap-2 min-w-[140px]">
-                          {getAdminStatusOptions(order.status).includes("DELIVERED") && (
-                            <button
-                              type="button"
-                              className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1.5 rounded font-medium whitespace-nowrap"
-                              onClick={() => handleStatusChange(order._id, "DELIVERED")}
-                            >
-                              Mark Delivered
-                            </button>
-                          )}
-                          <select
-                            className="bg-slate-100 border border-slate-200 rounded px-2 py-1 text-xs"
-                            value=""
-                            onChange={(e) => {
-                              if (e.target.value) {
-                                handleStatusChange(order._id, e.target.value);
-                                e.target.value = "";
-                              }
-                            }}
-                          >
-                            <option value="">More actions…</option>
-                            {getAdminStatusOptions(order.status)
-                              .filter((s) => s !== "DELIVERED")
-                              .map((s) => (
-                                <option key={s} value={s}>
-                                  {formatOrderStatus(s)}
-                                </option>
-                              ))}
-                          </select>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+                  )}
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -458,6 +467,8 @@ const Orders = () => {
     }
   };
 
+  const customerOrders = orders.filter((o) => o.status !== "DRAFT");
+
   return (
     <div className="p-2 md:p-4">
       <h1 className="text-2xl font-bold text-slate-800 mb-1">
@@ -471,10 +482,22 @@ const Orders = () => {
 
       {loading ? (
         <p className="text-center py-10 text-slate-500">Loading orders…</p>
-      ) : isAdmin ? (
-        <AdminOrders orders={orders} onStatusUpdate={handleStatusUpdate} />
       ) : (
-        <CustomerOrders orders={orders.filter((o) => o.status !== "DRAFT")} />
+        <OrdersTable
+          orders={isAdmin ? orders : customerOrders}
+          isAdmin={isAdmin}
+          onStatusUpdate={handleStatusUpdate}
+          emptyMessage={
+            isAdmin ? "No orders yet." : "You have no orders yet."
+          }
+          emptyLink={
+            !isAdmin ? (
+              <a href="/menu" className="text-red-500 underline mt-2 inline-block">
+                Browse Menu
+              </a>
+            ) : null
+          }
+        />
       )}
     </div>
   );
