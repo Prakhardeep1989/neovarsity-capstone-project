@@ -1,7 +1,11 @@
 const crypto = require("crypto");
 const { markOrderAsPaid } = require("../services/paymentHelper");
+const {
+  parseRazorpayPayment,
+  fetchRazorpayPaymentDetails,
+} = require("../utils/razorpayPaymentDetails");
 
-const createPaymentController = ({ orderModel }) => {
+const createPaymentController = ({ orderModel, razorpay }) => {
   const verifyPaymentSignature = (orderId, paymentId, signature) => {
     const body = `${orderId}|${paymentId}`;
     const expectedSignature = crypto
@@ -63,9 +67,15 @@ const createPaymentController = ({ orderModel }) => {
         });
       }
 
+      const paymentDetails = await fetchRazorpayPaymentDetails(
+        razorpay,
+        razorpay_payment_id
+      );
+
       await markOrderAsPaid(order, {
         razorpayOrderId: razorpay_order_id,
         razorpayPaymentId: razorpay_payment_id,
+        ...paymentDetails,
       });
 
       res.json({
@@ -118,7 +128,12 @@ const createPaymentController = ({ orderModel }) => {
           : await orderModel.findOne({ "payment.razorpayOrderId": razorpayOrderId });
 
         if (order && order.payment.status !== "PAID") {
-          await markOrderAsPaid(order, { razorpayOrderId, razorpayPaymentId });
+          const paymentDetails = parseRazorpayPayment(payment);
+          await markOrderAsPaid(order, {
+            razorpayOrderId,
+            razorpayPaymentId,
+            ...paymentDetails,
+          });
           console.log(`[RAZORPAY] Order ${order._id} marked as ORDERED/PAID via webhook`);
         }
       }

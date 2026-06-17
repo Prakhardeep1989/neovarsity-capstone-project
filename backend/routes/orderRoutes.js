@@ -16,7 +16,7 @@ const createOrderRoutes = ({
     productModel,
     razorpay,
   });
-  const paymentController = createPaymentController({ orderModel });
+  const paymentController = createPaymentController({ orderModel, razorpay });
 
   router.post(
     "/create-payment-order",

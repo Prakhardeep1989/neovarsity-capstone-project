@@ -19,7 +19,7 @@ const razorpay = new Razorpay({
 const app = express();
 app.use(cors());
 
-const paymentController = createPaymentController({ orderModel });
+const paymentController = createPaymentController({ orderModel, razorpay });
 
 app.post(
   "/api/payments/razorpay/webhook",

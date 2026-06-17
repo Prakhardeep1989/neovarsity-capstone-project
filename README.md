@@ -182,4 +182,4 @@ Log out and log back in to refresh the JWT.
 - The Razorpay webhook acts as a backup confirmation path.
 - Backend calculates order totals from MongoDB product prices (frontend prices are not trusted).
 - Use Razorpay **test mode** keys (`rzp_test_...`) during development.
-- Resend sandbox: with `homely_meals@resend.dev`, emails may only deliver to your Resend account email until a domain is verified.
+- Resend sandbox: with `homely_meals@resend.dev`, emails can only be delivered to your Resend account email. Set `RESEND_SANDBOX_EMAIL=coolprakhar06@gmail.com` — order receipts to other customers are automatically redirected there in dev (with a notice in the email body). For production, verify a domain at [resend.com/domains](https://resend.com/domains) and update `FROM_EMAIL`.

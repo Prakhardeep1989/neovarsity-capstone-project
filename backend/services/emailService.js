@@ -7,12 +7,97 @@ const escapeHtml = (value) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
+const getFromAddress = () =>
+  process.env.FROM_EMAIL || "HOMELY Meals <homely_meals@resend.dev>";
+
+const isResendSandbox = () => getFromAddress().includes("@resend.dev");
+
+const getSandboxRecipient = () =>
+  process.env.RESEND_SANDBOX_EMAIL ||
+  process.env.CONTACT_EMAIL ||
+  "coolprakhar06@gmail.com";
+
+const resolveRecipient = (intendedTo) => {
+  if (!intendedTo) {
+    return { to: null, sandboxRedirect: false };
+  }
+
+  if (!isResendSandbox()) {
+    return { to: intendedTo, sandboxRedirect: false };
+  }
+
+  const sandboxTo = getSandboxRecipient();
+  if (intendedTo.toLowerCase() === sandboxTo.toLowerCase()) {
+    return { to: sandboxTo, sandboxRedirect: false };
+  }
+
+  return { to: sandboxTo, sandboxRedirect: true, intendedTo };
+};
+
+const sandboxNoticeHtml = (intendedTo) => `
+  <div style="background:#fef3c7;border:1px solid #f59e0b;padding:12px;border-radius:8px;margin-bottom:16px;font-size:14px;">
+    <strong>Resend sandbox:</strong> This email was delivered to you because test mode only allows sending to
+    <strong>${escapeHtml(getSandboxRecipient())}</strong>.
+    In production it would go to <strong>${escapeHtml(intendedTo)}</strong>.
+  </div>
+`;
+
+const sendEmail = async ({ to, subject, html, replyTo }) => {
+  const { to: resolvedTo, sandboxRedirect, intendedTo } = resolveRecipient(to);
+
+  if (!resolvedTo) {
+    return { sent: false, reason: "Missing recipient email" };
+  }
+
+  const finalHtml = sandboxRedirect
+    ? `${sandboxNoticeHtml(intendedTo)}${html}`
+    : html;
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const payload = {
+    from: getFromAddress(),
+    to: [resolvedTo],
+    subject: sandboxRedirect ? `[Sandbox] ${subject}` : subject,
+    html: finalHtml,
+  };
+
+  if (replyTo) {
+    payload.replyTo = replyTo;
+  }
+
+  const { data, error } = await resend.emails.send(payload);
+
+  if (error) {
+    console.error("[EMAIL] Resend error:", error);
+    return { sent: false, reason: error.message || JSON.stringify(error) };
+  }
+
+  if (sandboxRedirect) {
+    console.log(
+      `[EMAIL] Sandbox redirect: "${subject}" sent to ${resolvedTo} (intended: ${intendedTo}, id: ${data.id})`
+    );
+  }
+
+  return { sent: true, id: data.id, sandboxRedirect, intendedTo: intendedTo || resolvedTo };
+};
+
+const formatReceiptDate = (date) =>
+  date
+    ? new Date(date).toLocaleString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "—";
+
 const buildReceiptHtml = (order) => {
   const itemsHtml = order.items
     .map(
       (item) =>
         `<tr>
-          <td style="padding:8px;border-bottom:1px solid #eee;">${item.name}</td>
+          <td style="padding:8px;border-bottom:1px solid #eee;">${escapeHtml(item.name)}</td>
           <td style="padding:8px;border-bottom:1px solid #eee;">${item.quantity}</td>
           <td style="padding:8px;border-bottom:1px solid #eee;">₹${item.price}</td>
           <td style="padding:8px;border-bottom:1px solid #eee;">₹${item.itemTotal}</td>
@@ -30,17 +115,55 @@ const buildReceiptHtml = (order) => {
     .filter(Boolean)
     .join(", ");
 
+  const payment = order.payment || {};
+  const paymentMode = payment.method || "Online";
+  const paymentDetail = payment.methodDetail || "";
+  const currency = payment.currency || "INR";
+  const amountPaid = payment.amount ?? order.totalAmount;
+  const orderDate = formatReceiptDate(order.createdAt);
+  const paidOn = formatReceiptDate(payment.paidAt);
+
+  const infoRow = (label, value) =>
+    value
+      ? `<tr>
+          <td style="padding:8px 12px 8px 0;color:#64748b;vertical-align:top;width:140px;">${label}</td>
+          <td style="padding:8px 0;font-weight:600;">${escapeHtml(String(value))}</td>
+        </tr>`
+      : "";
+
   return `
-    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-      <h1 style="color:#dc2626;">HOMELY Meals</h1>
-      <h2>Order Receipt</h2>
-      <p><strong>Order ID:</strong> ${order._id}</p>
-      <p><strong>Customer:</strong> ${order.userDetails?.name}</p>
-      <p><strong>Email:</strong> ${order.userDetails?.email}</p>
-      <p><strong>Delivery Address:</strong> ${address}</p>
-      <p><strong>Order Status:</strong> ${order.status}</p>
-      <p><strong>Payment Status:</strong> ${order.payment?.status}</p>
-      <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1e293b;">
+      <h1 style="color:#dc2626;margin-bottom:4px;">HOMELY Meals</h1>
+      <p style="color:#64748b;margin-top:0;">Order Receipt</p>
+
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:20px 0;">
+        <h3 style="margin:0 0 12px;color:#334155;">Order Details</h3>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+          ${infoRow("Order ID", order._id)}
+          ${infoRow("Order Date", orderDate)}
+          ${infoRow("Order Status", order.status)}
+          ${infoRow("Customer", order.userDetails?.name)}
+          ${infoRow("Email", order.userDetails?.email)}
+          ${infoRow("Phone", order.deliveryDetails?.phone || order.userDetails?.phone)}
+          ${infoRow("Delivery Address", address)}
+        </table>
+      </div>
+
+      <div style="background:#ecfdf5;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:20px 0;">
+        <h3 style="margin:0 0 12px;color:#166534;">Payment Details</h3>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+          ${infoRow("Payment Status", payment.status || "PAID")}
+          ${infoRow("Payment Gateway", payment.provider || "RAZORPAY")}
+          ${infoRow("Payment Mode", paymentMode)}
+          ${infoRow("Payment Info", paymentDetail)}
+          ${infoRow("Amount Paid", `₹${amountPaid} (${currency})`)}
+          ${infoRow("Paid On", paidOn)}
+          ${infoRow("Transaction ID", payment.razorpayPaymentId)}
+          ${infoRow("Razorpay Order ID", payment.razorpayOrderId)}
+        </table>
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;">
         <thead>
           <tr style="background:#f1f5f9;">
             <th style="padding:8px;text-align:left;">Item</th>
@@ -52,7 +175,7 @@ const buildReceiptHtml = (order) => {
         <tbody>${itemsHtml}</tbody>
       </table>
       <p style="font-size:18px;"><strong>Total Amount: ₹${order.totalAmount}</strong></p>
-      <p>Thank you for ordering from HOMELY Meals! Your homely meal is being prepared.</p>
+      <p style="color:#64748b;font-size:14px;">Thank you for ordering from HOMELY Meals! Your homely meal is being prepared.</p>
     </div>
   `;
 };
@@ -61,8 +184,6 @@ const sendOrderReceiptEmail = async (order) => {
   const to = order.userDetails?.email;
   const subject = `HOMELY Meals — Order Receipt #${String(order._id).slice(-8).toUpperCase()}`;
   const html = buildReceiptHtml(order);
-  const from =
-    process.env.FROM_EMAIL || "HOMELY Meals <homely_meals@resend.dev>";
 
   if (!process.env.RESEND_API_KEY) {
     console.log("[EMAIL] RESEND_API_KEY not configured.");
@@ -77,24 +198,15 @@ const sendOrderReceiptEmail = async (order) => {
   }
 
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const result = await sendEmail({ to, subject, html });
 
-    const { data, error } = await resend.emails.send({
-      from,
-      to: [to],
-      subject,
-      html,
-    });
-
-    if (error) {
-      console.error("[EMAIL] Resend error:", error);
-      return { sent: false, reason: error.message || JSON.stringify(error) };
+    if (result.sent) {
+      console.log(
+        `[EMAIL] Receipt sent for order ${order._id} (id: ${result.id})`
+      );
     }
 
-    console.log(
-      `[EMAIL] Receipt sent to ${to} for order ${order._id} (id: ${data.id})`
-    );
-    return { sent: true, id: data.id };
+    return result;
   } catch (err) {
     console.error("[EMAIL] Failed to send receipt:", err.message);
     return { sent: false, reason: err.message };
@@ -121,8 +233,6 @@ const sendContactEmail = async ({ name, email, message }) => {
       <p style="color:#64748b;font-size:14px;">Reply directly to ${safeEmail} to follow up.</p>
     </div>
   `;
-  const from =
-    process.env.FROM_EMAIL || "HOMELY Meals <homely_meals@resend.dev>";
 
   if (!process.env.RESEND_API_KEY) {
     console.log("[EMAIL] RESEND_API_KEY not configured.");
@@ -131,23 +241,15 @@ const sendContactEmail = async ({ name, email, message }) => {
   }
 
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const result = await sendEmail({ to, subject, html, replyTo: email });
 
-    const { data, error } = await resend.emails.send({
-      from,
-      to: [to],
-      replyTo: email,
-      subject,
-      html,
-    });
-
-    if (error) {
-      console.error("[EMAIL] Resend contact error:", error);
-      return { sent: false, reason: error.message || JSON.stringify(error) };
+    if (result.sent) {
+      console.log(
+        `[EMAIL] Contact message from ${email} sent to ${result.intendedTo || to} (id: ${result.id})`
+      );
     }
 
-    console.log(`[EMAIL] Contact message from ${email} sent to ${to} (id: ${data.id})`);
-    return { sent: true, id: data.id };
+    return result;
   } catch (err) {
     console.error("[EMAIL] Failed to send contact message:", err.message);
     return { sent: false, reason: err.message };
