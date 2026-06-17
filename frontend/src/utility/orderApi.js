@@ -88,3 +88,8 @@ export const formatDeliveryAddress = (details) => {
     .filter(Boolean)
     .join(", ");
 };
+
+export const getOrderCustomerName = (order) =>
+  order.userDetails?.name ||
+  `${order.user?.firstName || ""} ${order.user?.lastName || ""}`.trim() ||
+  "—";
