@@ -70,7 +70,7 @@ const Header = () => {
             {!isAdmin && <Link to={"contact"}>Contact</Link>}
             {isLoggedIn && (
               <Link to={"orders"} className="text-red-600 font-medium">
-                Orders
+                {isAdmin ? "Orders" : "My Orders"}
               </Link>
             )}
           </nav>
@@ -147,7 +147,7 @@ const Header = () => {
                   )}
                   {isLoggedIn && (
                     <Link to={"orders"} className="px-3 py-1 hover:bg-slate-100">
-                      Orders
+                      {isAdmin ? "Orders" : "My Orders"}
                     </Link>
                   )}
                 </nav>
