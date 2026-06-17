@@ -99,7 +99,7 @@ const HighlightCarousel = ({ items }) => {
           return (
             <article
               key={item.title}
-              className="snap-start shrink-0 w-[85%] sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-1rem)] bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden"
+              className="snap-start shrink-0 w-[85%] sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-1rem)] bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-orange-100"
             >
               <FoodImage
                 src={item.image}

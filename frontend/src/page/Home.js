@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import HighlightCarousel from "../component/HighlightCarousel";
 import PageLayout from "../component/PageLayout";
 import FoodImage from "../component/FoodImage";
+import AnimateOnScroll from "../component/AnimateOnScroll";
 import { LANDING_HIGHLIGHTS, LANDING_IMAGES } from "../utility/landingImages";
 import { BUSINESS_INFO } from "../utility/businessInfo";
 import { FaBookOpen, FaShoppingBag, FaSmile, FaMotorcycle, FaClock } from "react-icons/fa";
@@ -28,68 +29,90 @@ const HOW_IT_WORKS = [
   },
 ];
 
+const heroEnter = "motion-safe:opacity-0 motion-safe:animate-fade-up";
+
 const Home = () => {
   return (
     <PageLayout className="bg-gradient-to-b from-orange-50 via-stone-50 to-white">
-        {/* Hero */}
-        <section className="mb-8 md:mb-10">
-          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-            <div className="w-full lg:w-1/2 text-center lg:text-left">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-stone-900 leading-tight">
-                HOMELY Meals
-              </h1>
-              <p className="mt-3 text-lg md:text-xl text-orange-700 font-medium">
-                Ghar Jaisa Khana
+      {/* Hero */}
+      <section className="mb-8 md:mb-10">
+        <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+          <div className="w-full lg:w-1/2 text-center lg:text-left">
+            <h1
+              className={`text-4xl md:text-5xl lg:text-6xl font-bold text-stone-900 leading-tight ${heroEnter}`}
+            >
+              HOMELY Meals
+            </h1>
+            <p
+              className={`mt-3 text-lg md:text-xl text-orange-700 font-medium ${heroEnter} motion-safe:[animation-delay:100ms]`}
+            >
+              Ghar Jaisa Khana
+            </p>
+            <p
+              className={`mt-4 text-base md:text-lg text-stone-600 max-w-xl mx-auto lg:mx-0 ${heroEnter} motion-safe:[animation-delay:200ms]`}
+            >
+              Fresh, hygienic, home-style meals delivered to your doorstep.
+            </p>
+            <p
+              className={`mt-3 inline-flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1 mx-auto lg:mx-0 ${heroEnter} motion-safe:[animation-delay:300ms]`}
+            >
+              <span className="font-medium">{BUSINESS_INFO.fssaiLabel}</span>
+            </p>
+            <p
+              className={`mt-3 text-xs text-stone-500 max-w-xl mx-auto lg:mx-0 ${heroEnter} motion-safe:[animation-delay:350ms]`}
+            >
+              A digital service of {BUSINESS_INFO.parentCompany.name}, our parent
+              company.
+            </p>
+            <div
+              className={`mt-3 flex flex-col items-center lg:items-start gap-1 text-sm ${heroEnter} motion-safe:[animation-delay:400ms]`}
+            >
+              <p className="flex items-center gap-2 text-stone-700 font-semibold">
+                <FaClock className="text-orange-600 shrink-0" />
+                {BUSINESS_INFO.hoursSummary}
               </p>
-              <p className="mt-4 text-base md:text-lg text-stone-600 max-w-xl mx-auto lg:mx-0">
-                Fresh, hygienic, home-style meals delivered to your doorstep.
+              <p className="text-stone-500 font-medium pl-6 lg:pl-0 lg:ml-6">
+                {BUSINESS_INFO.closedDay}
               </p>
-              <p className="mt-3 inline-flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1 mx-auto lg:mx-0">
-                <span className="font-medium">{BUSINESS_INFO.fssaiLabel}</span>
-              </p>
-              <p className="mt-3 text-xs text-stone-500 max-w-xl mx-auto lg:mx-0">
-                A digital service of {BUSINESS_INFO.parentCompany.name}, our parent
-                company.
-              </p>
-              <div className="mt-3 flex flex-col items-center lg:items-start gap-1 text-sm">
-                <p className="flex items-center gap-2 text-stone-700 font-semibold">
-                  <FaClock className="text-orange-600 shrink-0" />
-                  {BUSINESS_INFO.hoursSummary}
-                </p>
-                <p className="text-stone-500 font-medium pl-6 lg:pl-0 lg:ml-6">
-                  {BUSINESS_INFO.closedDay}
-                </p>
-              </div>
-              <div className="mt-8 lg:mt-10">
-                <Link
-                  to="/menu"
-                  className="inline-block font-semibold bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-lg shadow-sm transition-colors"
-                >
-                  Order Now
-                </Link>
-              </div>
             </div>
-            <div className="w-full lg:w-1/2">
-              <FoodImage
-                src={LANDING_IMAGES.hero}
-                alt="Fresh home-style Indian thali meal"
-                className="w-full h-64 md:h-80 lg:h-96 object-cover"
-                rounded="rounded-2xl"
-                priority
-                lazy={false}
-              />
+            <div
+              className={`mt-8 lg:mt-10 ${heroEnter} motion-safe:[animation-delay:500ms]`}
+            >
+              <Link
+                to="/menu"
+                className="inline-block font-semibold bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-lg shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95"
+              >
+                Order Now
+              </Link>
             </div>
           </div>
-        </section>
+          <div
+            className={`w-full lg:w-1/2 ${heroEnter} motion-safe:[animation-delay:300ms]`}
+          >
+            <FoodImage
+              src={LANDING_IMAGES.hero}
+              alt="Fresh home-style Indian thali meal"
+              className="w-full h-64 md:h-80 lg:h-96 object-cover motion-safe:transition-transform motion-safe:duration-500 hover:scale-[1.02]"
+              rounded="rounded-2xl"
+              priority
+              lazy={false}
+            />
+          </div>
+        </div>
+      </section>
 
-        {/* Free delivery banner */}
+      {/* Free delivery banner */}
+      <AnimateOnScroll>
         <section className="mb-8 md:mb-10">
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 px-6 py-5 md:px-8 md:py-6 shadow-lg">
-            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10" />
-            <div className="absolute -left-4 -bottom-8 h-20 w-20 rounded-full bg-white/10" />
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 bg-[length:200%_200%] motion-safe:animate-gradient-shift px-6 py-5 md:px-8 md:py-6 shadow-lg">
+            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10 motion-safe:animate-float" />
+            <div
+              className="absolute -left-4 -bottom-8 h-20 w-20 rounded-full bg-white/10 motion-safe:animate-float"
+              style={{ animationDelay: "1.5s" }}
+            />
             <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-3 text-white">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 motion-safe:animate-float">
                   <FaMotorcycle size={22} />
                 </span>
                 <div>
@@ -112,25 +135,27 @@ const Home = () => {
                   {BUSINESS_INFO.closedDay}
                 </span>
               </div>
-         
             </div>
           </div>
         </section>
+      </AnimateOnScroll>
 
-        {/* Highlights carousel */}
+      {/* Highlights carousel */}
+      <AnimateOnScroll delay={100}>
         <HighlightCarousel items={LANDING_HIGHLIGHTS} />
+      </AnimateOnScroll>
 
-        {/* How it works */}
-        <section className="pt-6 md:pt-8">
+      {/* How it works */}
+      <section className="pt-6 md:pt-8">
+        <AnimateOnScroll>
           <h2 className="text-2xl md:text-3xl font-bold text-stone-800 text-center mb-8 md:mb-12">
             How It Works
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {HOW_IT_WORKS.map(({ step, title, description, icon: Icon }) => (
-              <div
-                key={step}
-                className="bg-white rounded-2xl border border-stone-100 shadow-sm p-6 text-center"
-              >
+        </AnimateOnScroll>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+          {HOW_IT_WORKS.map(({ step, title, description, icon: Icon }, index) => (
+            <AnimateOnScroll key={step} delay={index * 120}>
+              <div className="bg-white rounded-2xl border border-stone-100 shadow-sm p-6 text-center h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-orange-100">
                 <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center text-lg font-bold">
                   {step}
                 </div>
@@ -142,9 +167,10 @@ const Home = () => {
                   {description}
                 </p>
               </div>
-            ))}
-          </div>
-        </section>
+            </AnimateOnScroll>
+          ))}
+        </div>
+      </section>
     </PageLayout>
   );
 };
