@@ -41,7 +41,17 @@ const createAuthMiddleware = (userModel) => {
     }
   };
 
-  return { protectRoute, adminOnly };
+  const customerOnly = (req, res, next) => {
+    if (req.user?.role === "ADMIN") {
+      return res.status(403).send({
+        message: "Admins cannot access customer order routes",
+        alert: false,
+      });
+    }
+    next();
+  };
+
+  return { protectRoute, adminOnly, customerOnly };
 };
 
 module.exports = createAuthMiddleware;

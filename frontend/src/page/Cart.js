@@ -3,8 +3,8 @@ import { useSelector } from "react-redux";
 import CartProduct from "../component/cartProduct";
 import emptyCartImage from "../assest/empty.gif";
 import { toast } from "react-hot-toast";
-import { loadStripe } from "@stripe/stripe-js";
 import { useNavigate } from "react-router-dom";
+import { createCheckoutSession } from "../utility/orderApi";
 
 const PHONE_REGEX = /^[6-9]\d{9}$/;
 
@@ -55,28 +55,39 @@ const Cart = () => {
 
     if (!canPay) return;
 
-    if (!user.email) {
+    if (!user.email || !user.token) {
       toast("You are not logged in!");
       setTimeout(() => navigate("/login"), 1000);
       return;
     }
 
-    const stripePromise = await loadStripe(
-      process.env.REACT_APP_STRIPE_PUBLIC_KEY
-    );
-    const res = await fetch(
-      `${process.env.REACT_APP_SERVER_DOMIN}/create-checkout-session`,
-      {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(productCartItem),
-      }
-    );
-    if (res.statusCode === 500) return;
+    try {
+      const response = await createCheckoutSession(
+        {
+          items: productCartItem.map((item) => ({
+            productId: item._id,
+            quantity: item.qty,
+          })),
+          deliveryDetails: {
+            fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+            phone: contactNumber,
+            addressLine1: deliveryAddress,
+            city: "Chandausi",
+            state: "UP",
+          },
+        },
+        user.token
+      );
 
-    const data = await res.json();
-    toast("Redirecting to payment gateway…");
-    stripePromise.redirectToCheckout({ sessionId: data });
+      if (response.alert && response.checkoutUrl) {
+        toast("Redirecting to payment gateway…");
+        window.location.href = response.checkoutUrl;
+      } else {
+        toast(response.message || "Failed to start checkout");
+      }
+    } catch {
+      toast("Failed to connect to payment server");
+    }
   };
 
   return (

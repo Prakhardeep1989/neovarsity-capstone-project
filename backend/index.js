@@ -6,9 +6,23 @@ const Stripe = require("stripe");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const createAuthMiddleware = require("./middleware/auth");
+const orderModel = require("./models/Order");
+const createOrderRoutes = require("./routes/orderRoutes");
+const createPaymentController = require("./controllers/paymentController");
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
 app.use(cors());
+
+const paymentController = createPaymentController({ orderModel, stripe });
+
+app.post(
+  "/api/payments/stripe/webhook",
+  express.raw({ type: "application/json" }),
+  paymentController.handleStripeWebhook
+);
+
 app.use(express.json({ limit: "10mb" }));
 
 const PORT = process.env.PORT || 8080;
@@ -40,7 +54,7 @@ const userSchema = mongoose.Schema({
 });
 
 const userModel = mongoose.model("user", userSchema);
-const { protectRoute, adminOnly } = createAuthMiddleware(userModel);
+const { protectRoute, adminOnly, customerOnly } = createAuthMiddleware(userModel);
 
 const schemaProduct = mongoose.Schema(
   {
@@ -89,16 +103,15 @@ const getOptionalUser = async (req) => {
 
 const isAdminUser = (user) => user?.role === "ADMIN";
 
-const orderSchema = mongoose.Schema({
-  userEmail: String,
-  userName: String,
-  items: Array,
-  totalQty: Number,
-  totalPrice: Number,
-  status: { type: String, default: "paid" },
-  createdAt: { type: Date, default: Date.now },
+const orderRoutes = createOrderRoutes({
+  orderModel,
+  productModel,
+  stripe,
+  protectRoute,
+  adminOnly,
+  customerOnly,
 });
-const orderModel = mongoose.model("order", orderSchema);
+app.use("/api/orders", orderRoutes);
 
 app.get("/", (req, res) => {
   res.send("HOMELY Meals API is running");
@@ -300,74 +313,24 @@ app.delete("/api/products/admin/:id", protectRoute, adminOnly, async (req, res) 
 });
 
 app.post("/save-order", async (req, res) => {
-  try {
-    const { userEmail, userName, items, totalQty, totalPrice } = req.body;
-
-    if (!userEmail || !items || items.length === 0) {
-      return res.status(400).send({ message: "Invalid order data", alert: false });
-    }
-
-    await orderModel.create({
-      userEmail,
-      userName,
-      items,
-      totalQty,
-      totalPrice,
-    });
-
-    res.send({ message: "Order saved successfully", alert: true });
-  } catch (err) {
-    res.status(500).send({ message: "Failed to save order", alert: false });
-  }
+  res.status(410).send({
+    message: "Deprecated. Orders are created via POST /api/orders/create-checkout-session",
+    alert: false,
+  });
 });
 
 app.get("/orders/:email", async (req, res) => {
-  try {
-    const orders = await orderModel
-      .find({ userEmail: req.params.email })
-      .sort({ createdAt: -1 });
-    res.send(orders);
-  } catch (err) {
-    res.status(500).send([]);
-  }
+  res.status(410).send({
+    message: "Deprecated. Use GET /api/orders/my-orders",
+    alert: false,
+  });
 });
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
 app.post("/create-checkout-session", async (req, res) => {
-  try {
-    const params = {
-      submit_type: "pay",
-      mode: "payment",
-      payment_method_types: ["card"],
-      billing_address_collection: "auto",
-      shipping_options: [{ shipping_rate: "shr_1NBY3pSIdZYVEHlOjpjx9hLn" }],
-
-      line_items: req.body.map((item) => {
-        return {
-          price_data: {
-            currency: "inr",
-            product_data: {
-              name: item.name,
-            },
-            unit_amount: item.price * 100,
-          },
-          adjustable_quantity: {
-            enabled: true,
-            minimum: 1,
-          },
-          quantity: item.qty,
-        };
-      }),
-      success_url: `${process.env.FRONTEND_URL}/success`,
-      cancel_url: `${process.env.FRONTEND_URL}/cancel`,
-    };
-
-    const session = await stripe.checkout.sessions.create(params);
-    res.status(200).json(session.id);
-  } catch (err) {
-    res.status(err.statusCode || 500).json(err.message);
-  }
+  res.status(410).send({
+    message: "Deprecated. Use POST /api/orders/create-checkout-session",
+    alert: false,
+  });
 });
 
 app.listen(PORT, () => console.log("Server is running at port: " + PORT));

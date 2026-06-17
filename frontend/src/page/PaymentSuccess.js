@@ -1,0 +1,46 @@
+import React, { useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { clearCart } from "../redux/productSlide";
+
+const PaymentSuccess = () => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(clearCart());
+  }, [dispatch]);
+
+  return (
+    <div className="p-4 md:p-8 max-w-lg mx-auto text-center">
+      <div className="bg-green-100 border border-green-300 rounded-lg p-8 shadow">
+        <p className="text-5xl mb-4">✓</p>
+        <h1 className="text-2xl font-bold text-green-800 mb-2">
+          Payment Successful!
+        </h1>
+        <p className="text-slate-600 mb-2">
+          Thank you for ordering from HOMELY Meals.
+        </p>
+        <p className="text-slate-500 text-sm mb-6">
+          Your order is being processed. Payment confirmation may take a moment.
+          Check the <strong>Orders</strong> tab for status updates.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link
+            to="/orders"
+            className="inline-block bg-red-500 hover:bg-red-600 text-white font-medium px-6 py-2 rounded-full"
+          >
+            View My Orders
+          </Link>
+          <Link
+            to="/"
+            className="inline-block bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium px-6 py-2 rounded-full"
+          >
+            Continue Shopping
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PaymentSuccess;

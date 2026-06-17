@@ -68,6 +68,11 @@ const Header = () => {
             <Link to={"about"}>About</Link>
             <Link to={"menu"}>Menu</Link>
             <Link to={"contact"}>Contact</Link>
+            {isLoggedIn && (
+              <Link to={"orders"} className="text-red-600 font-medium">
+                Orders
+              </Link>
+            )}
           </nav>
           {!isAdmin && (
             <div className="text-2xl text-slate-600 relative">
@@ -138,6 +143,11 @@ const Header = () => {
                   <Link to={"contact"} className="px-3 py-1 hover:bg-slate-100">
                     Contact
                   </Link>
+                  {isLoggedIn && (
+                    <Link to={"orders"} className="px-3 py-1 hover:bg-slate-100">
+                      Orders
+                    </Link>
+                  )}
                 </nav>
               </div>
             )}
