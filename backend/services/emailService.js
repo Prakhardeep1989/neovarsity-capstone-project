@@ -1,3 +1,5 @@
+const { Resend } = require("resend");
+
 const buildReceiptHtml = (order) => {
   const itemsHtml = order.items
     .map(
@@ -52,37 +54,40 @@ const sendOrderReceiptEmail = async (order) => {
   const to = order.userDetails?.email;
   const subject = `HOMELY Meals — Order Receipt #${String(order._id).slice(-8).toUpperCase()}`;
   const html = buildReceiptHtml(order);
+  const from =
+    process.env.FROM_EMAIL || "HOMELY Meals <homely_meals@resend.dev>";
 
-  if (!process.env.SENDGRID_API_KEY || !process.env.FROM_EMAIL) {
-    console.log("[EMAIL] SENDGRID_API_KEY or FROM_EMAIL not configured.");
+  if (!process.env.RESEND_API_KEY) {
+    console.log("[EMAIL] RESEND_API_KEY not configured.");
     console.log(`[EMAIL TODO] Receipt for order ${order._id} would be sent to ${to}`);
     console.log(`Subject: ${subject}`);
     return { sent: false, reason: "Email not configured" };
   }
 
+  if (!to) {
+    console.error("[EMAIL] No recipient email on order", order._id);
+    return { sent: false, reason: "Missing recipient email" };
+  }
+
   try {
-    const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        personalizations: [{ to: [{ email: to }] }],
-        from: { email: process.env.FROM_EMAIL, name: "HOMELY Meals" },
-        subject,
-        content: [{ type: "text/html", value: html }],
-      }),
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    const { data, error } = await resend.emails.send({
+      from,
+      to: [to],
+      subject,
+      html,
     });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("[EMAIL] SendGrid error:", errText);
-      return { sent: false, reason: errText };
+    if (error) {
+      console.error("[EMAIL] Resend error:", error);
+      return { sent: false, reason: error.message || JSON.stringify(error) };
     }
 
-    console.log(`[EMAIL] Receipt sent to ${to} for order ${order._id}`);
-    return { sent: true };
+    console.log(
+      `[EMAIL] Receipt sent to ${to} for order ${order._id} (id: ${data.id})`
+    );
+    return { sent: true, id: data.id };
   } catch (err) {
     console.error("[EMAIL] Failed to send receipt:", err.message);
     return { sent: false, reason: err.message };
