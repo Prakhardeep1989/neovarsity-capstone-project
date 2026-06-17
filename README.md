@@ -43,7 +43,14 @@ cd backend
 npm install
 ```
 
-Create `backend/.env`:
+Copy the template and fill in your values:
+
+```bash
+copy .env.example .env    # Windows
+# cp .env.example .env    # Mac/Linux
+```
+
+See `backend/.env.example` for comments on each variable. Minimum required:
 
 ```env
 PORT=8080
@@ -53,10 +60,10 @@ RAZORPAY_KEY_ID=rzp_test_...
 RAZORPAY_KEY_SECRET=your_razorpay_key_secret
 RAZORPAY_WEBHOOK_SECRET=your_webhook_secret
 WEBHOOK_URL=https://YOUR-PUBLIC-URL/api/payments/razorpay/webhook
-CLIENT_URL=http://localhost:3000
-FRONTEND_URL=http://localhost:3000
 RESEND_API_KEY=re_...
 FROM_EMAIL=HOMELY Meals <homely_meals@resend.dev>
+CONTACT_EMAIL=your-email@example.com
+RESEND_SANDBOX_EMAIL=your-email@example.com
 ```
 
 Start the server:
@@ -72,12 +79,21 @@ cd frontend
 npm install
 ```
 
-Create `frontend/.env`:
+Copy the template and fill in your values:
+
+```bash
+copy .env.example .env    # Windows
+# cp .env.example .env    # Mac/Linux
+```
+
+See `frontend/.env.example` for comments on each variable:
 
 ```env
 REACT_APP_SERVER_DOMIN=http://localhost:8080
 REACT_APP_RAZORPAY_KEY_ID=rzp_test_...
 ```
+
+`REACT_APP_RAZORPAY_KEY_ID` must be the same Razorpay test key as `RAZORPAY_KEY_ID` in `backend/.env`.
 
 Start the app:
 
