@@ -15,6 +15,7 @@ import {
   formatCategory,
 } from "../utility/productConstants";
 import { setDataProduct } from "../redux/productSlide";
+import PageLayout from "../component/PageLayout";
 
 const MenuBrowse = () => {
   const dispatch = useDispatch();
@@ -96,7 +97,7 @@ const MenuBrowse = () => {
   };
 
   return (
-    <div className="p-2 md:p-4">
+    <PageLayout>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-800">Our Menu</h1>
@@ -212,7 +213,7 @@ const MenuBrowse = () => {
           </button>
         </div>
       </Modal>
-    </div>
+    </PageLayout>
   );
 };
 

@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import ProductForm from "../component/ProductForm";
 import { createProduct, fetchProducts } from "../utility/productApi";
 import { setDataProduct } from "../redux/productSlide";
+import PageLayout from "../component/PageLayout";
 
 const Newproduct = () => {
   const userData = useSelector((state) => state.user);
@@ -42,40 +43,44 @@ const Newproduct = () => {
 
   if (!isLoggedIn) {
     return (
-      <div className="p-8 text-center">
-        <p className="text-slate-600 text-lg mb-4">
-          Please log in to access this page.
-        </p>
-        <button
-          onClick={() => navigate("/login")}
-          className="bg-red-500 text-white px-4 py-2 rounded"
-        >
-          Go to Login
-        </button>
-      </div>
+      <PageLayout centered contentClassName="max-w-md">
+        <div className="text-center">
+          <p className="text-slate-600 text-lg mb-4">
+            Please log in to access this page.
+          </p>
+          <button
+            onClick={() => navigate("/login")}
+            className="bg-red-500 text-white px-4 py-2 rounded"
+          >
+            Go to Login
+          </button>
+        </div>
+      </PageLayout>
     );
   }
 
   if (!isAdmin) {
     return (
-      <div className="p-8 text-center">
-        <p className="text-slate-600 text-lg mb-4">
-          You do not have permission to add products.
-        </p>
-        <button
-          onClick={() => navigate("/")}
-          className="bg-red-500 text-white px-4 py-2 rounded"
-        >
-          Go Home
-        </button>
-      </div>
+      <PageLayout centered contentClassName="max-w-md">
+        <div className="text-center">
+          <p className="text-slate-600 text-lg mb-4">
+            You do not have permission to add products.
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            className="bg-red-500 text-white px-4 py-2 rounded"
+          >
+            Go Home
+          </button>
+        </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="p-4 flex justify-center">
+    <PageLayout centered>
       <ProductForm onSubmit={handleSubmit} submitLabel="Create Product" />
-    </div>
+    </PageLayout>
   );
 };
 

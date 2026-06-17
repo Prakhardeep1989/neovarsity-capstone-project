@@ -1,123 +1,165 @@
-import React, { useRef } from "react";
-import { useSelector } from "react-redux";
-import CardFeature from "../component/CardFeature";
-import HomeCard from "../component/HomeCard";
-import { GrPrevious, GrNext } from "react-icons/gr";
-import AllProduct from "../component/AllProduct";
+import React from "react";
+import { Link } from "react-router-dom";
+import HighlightCarousel from "../component/HighlightCarousel";
+import PageLayout from "../component/PageLayout";
+import { LANDING_HIGHLIGHTS, LANDING_IMAGES } from "../utility/landingImages";
+import { BUSINESS_INFO } from "../utility/businessInfo";
+import { FaBookOpen, FaShoppingBag, FaSmile, FaMotorcycle, FaClock } from "react-icons/fa";
 
-const Home = () => {
-  const productData = useSelector((state) => state.product.productList);
-  const homeProductCartList = productData.slice(0, 4);
-  const thaliProducts = productData.filter((el) => el.category === "THALI");
-  const loadingArray = new Array(4).fill(null);
-  const loadingArrayFeature = new Array(6).fill(null);
+const HeroImage = () => {
+  const [failed, setFailed] = React.useState(false);
 
-  const slideProductRef = useRef();
-  const nextProduct = () => {
-    slideProductRef.current.scrollLeft += 200;
-  };
-  const preveProduct = () => {
-    slideProductRef.current.scrollLeft -= 200;
-  };
+  if (failed) {
+    return (
+      <div className="w-full h-64 md:h-80 lg:h-96 rounded-2xl bg-gradient-to-br from-orange-100 via-amber-50 to-red-100 flex items-center justify-center border border-orange-100">
+        <p className="text-stone-500 text-sm px-6 text-center">
+          Place hero image at public/assets/images/hero-meal.jpg
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-2 md:p-4">
-      <div className="md:flex gap-4 py-2">
-        <div className="md:w-1/2">
-          <div className="flex gap-3 bg-slate-300 w-36 px-2 items-center rounded-full">
-            <p className="text-sm font-medium text-slate-900">Bike Delivery</p>
-            <img
-              src="https://cdn-icons-png.flaticon.com/512/2972/2972185.png"
-              alt="Delivery"
-              className="h-7"
-            />
+    <img
+      src={LANDING_IMAGES.hero}
+      alt="Fresh home-style Indian meal"
+      className="w-full h-64 md:h-80 lg:h-96 object-cover rounded-2xl shadow-md border border-orange-100"
+      onError={() => setFailed(true)}
+    />
+  );
+};
+
+const HOW_IT_WORKS = [
+  {
+    step: 1,
+    title: "Browse Menu",
+    description: "Explore our simple menu of thalis, combos, and add-ons.",
+    icon: FaBookOpen,
+  },
+  {
+    step: 2,
+    title: "Place Order",
+    description: "Add items to cart and checkout with secure digital payment.",
+    icon: FaShoppingBag,
+  },
+  {
+    step: 3,
+    title: "Enjoy Fresh Food",
+    description: "Receive hygienic, home-style meals delivered to your door.",
+    icon: FaSmile,
+  },
+];
+
+const Home = () => {
+  return (
+    <PageLayout className="bg-gradient-to-b from-orange-50 via-stone-50 to-white">
+        {/* Hero */}
+        <section className="mb-8 md:mb-10">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+            <div className="w-full lg:w-1/2 text-center lg:text-left">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-stone-900 leading-tight">
+                HOMELY Meals
+              </h1>
+              <p className="mt-3 text-lg md:text-xl text-orange-700 font-medium">
+                Ghar Jaisa Khana
+              </p>
+              <p className="mt-4 text-base md:text-lg text-stone-600 max-w-xl mx-auto lg:mx-0">
+                Fresh, hygienic, home-style meals delivered to your doorstep.
+              </p>
+              <p className="mt-3 inline-flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1 mx-auto lg:mx-0">
+                <span className="font-medium">{BUSINESS_INFO.fssaiLabel}</span>
+              </p>
+              <p className="mt-3 text-xs text-stone-500 max-w-xl mx-auto lg:mx-0">
+                A digital service of {BUSINESS_INFO.parentCompany.name}, our parent
+                company.
+              </p>
+              <div className="mt-3 flex flex-col items-center lg:items-start gap-1 text-sm">
+                <p className="flex items-center gap-2 text-stone-700 font-semibold">
+                  <FaClock className="text-orange-600 shrink-0" />
+                  {BUSINESS_INFO.hoursSummary}
+                </p>
+                <p className="text-stone-500 font-medium pl-6 lg:pl-0 lg:ml-6">
+                  {BUSINESS_INFO.closedDay}
+                </p>
+              </div>
+              <div className="mt-8 lg:mt-10">
+                <Link
+                  to="/menu"
+                  className="inline-block font-semibold bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-lg shadow-sm transition-colors"
+                >
+                  Order Now
+                </Link>
+              </div>
+            </div>
+            <div className="w-full lg:w-1/2">
+              <HeroImage />
+            </div>
           </div>
-          <h2 className="text-4xl md:text-7xl font-bold py-3">
-            The Fasted Delivery in{" "}
-            <span className="text-red-600 text-">Your Home</span>
-          </h2>
-          <p className="py-3 text-base ">
-            Seamless Online Experience: Our user-friendly platform is designed
-            to enhance your shopping experience. With easy navigation, detailed
-            product descriptions, and secure payment options, we aim to make
-            your ordering process hassle-free and enjoyable.
-          </p>
-          <button
-            onClick={() =>
-              document
-                .getElementById("menu-section")
-                ?.scrollIntoView({ behavior: "smooth" })
-            }
-            className="font-bold bg-red-500 hover:bg-red-600 text-slate-200 px-4 py-2 rounded-md"
-          >
-            Order Now
-          </button>
-        </div>
+        </section>
 
-        <div className="md:w-1/2 flex flex-wrap gap-5 p-4 justify-center">
-          {homeProductCartList[0]
-            ? homeProductCartList.map((el) => (
-                <HomeCard
-                  key={el._id}
-                  id={el._id}
-                  image={el.image}
-                  name={el.name}
-                  price={el.price}
-                  category={el.category}
-                />
-              ))
-            : loadingArray.map((el, index) => (
-                <HomeCard key={index + "loading"} loading={"Loading..."} />
-              ))}
-        </div>
-      </div>
-
-      <div className="">
-        <div className="flex w-full items-center">
-          <h2 className="font-bold text-2xl text-slate-800 mb-4">
-            Thali Specials
-          </h2>
-          <div className="ml-auto flex gap-4">
-            <button
-              onClick={preveProduct}
-              className="bg-slate-300 hover:bg-slate-400 text-lg  p-1 rounded"
-            >
-              <GrPrevious />
-            </button>
-            <button
-              onClick={nextProduct}
-              className="bg-slate-300 hover:bg-slate-400 text-lg p-1 rounded "
-            >
-              <GrNext />
-            </button>
+        {/* Free delivery banner */}
+        <section className="mb-8 md:mb-10">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 px-6 py-5 md:px-8 md:py-6 shadow-lg">
+            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10" />
+            <div className="absolute -left-4 -bottom-8 h-20 w-20 rounded-full bg-white/10" />
+            <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-3 text-white">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20">
+                  <FaMotorcycle size={22} />
+                </span>
+                <div>
+                  <p className="text-xl md:text-2xl font-bold tracking-tight">
+                    {BUSINESS_INFO.freeDeliveryLabel}
+                  </p>
+                  <p className="text-sm md:text-base text-orange-50 font-medium">
+                    On every order within our delivery area
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1 rounded-lg bg-white/15 px-4 py-2 text-white self-start sm:self-center">
+                <div className="flex items-center gap-2">
+                  <FaClock size={16} />
+                  <span className="text-sm md:text-base font-bold">
+                    {BUSINESS_INFO.hoursSummary}
+                  </span>
+                </div>
+                <span className="text-xs md:text-sm font-semibold text-orange-100 pl-6">
+                  {BUSINESS_INFO.closedDay}
+                </span>
+              </div>
+            </div>
           </div>
-        </div>
-        <div
-          className="flex gap-5 overflow-scroll scrollbar-none scroll-smooth transition-all"
-          ref={slideProductRef}
-        >
-          {thaliProducts[0]
-            ? thaliProducts.map((el) => (
-                <CardFeature
-                  key={el._id + "thali"}
-                  id={el._id}
-                  name={el.name}
-                  category={el.category}
-                  price={el.price}
-                  image={el.image}
-                  status={el.status}
-                />
-              ))
-            : loadingArrayFeature.map((el, index) => (
-                <CardFeature loading="Loading..." key={index + "cartLoading"} />
-              ))}
-        </div>
-      </div>
+        </section>
 
-      <div id="menu-section">
-        <AllProduct heading={"Our Menu"} />
-      </div>
-    </div>
+        {/* Highlights carousel */}
+        <HighlightCarousel items={LANDING_HIGHLIGHTS} />
+
+        {/* How it works */}
+        <section className="pt-6 md:pt-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-stone-800 text-center mb-8 md:mb-12">
+            How It Works
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            {HOW_IT_WORKS.map(({ step, title, description, icon: Icon }) => (
+              <div
+                key={step}
+                className="bg-white rounded-2xl border border-stone-100 shadow-sm p-6 text-center"
+              >
+                <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center text-lg font-bold">
+                  {step}
+                </div>
+                <Icon className="mx-auto text-orange-600 mb-3" size={28} />
+                <h3 className="font-semibold text-stone-800 text-lg mb-2">
+                  {title}
+                </h3>
+                <p className="text-sm text-stone-600 leading-relaxed">
+                  {description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+    </PageLayout>
   );
 };
 

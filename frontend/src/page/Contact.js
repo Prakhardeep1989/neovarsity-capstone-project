@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
 import { BUSINESS_INFO } from "../utility/businessInfo";
 import { sendContactMessage } from "../utility/contactApi";
+import PageLayout from "../component/PageLayout";
 
 const getPrefilledFields = (user, message = "") => ({
   name: user.email
@@ -50,7 +51,7 @@ const Contact = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-4xl mx-auto">
+    <PageLayout narrow>
       <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mb-2">
         Contact Us
       </h1>
@@ -74,7 +75,8 @@ const Contact = () => {
           </div>
           <div>
             <p className="font-medium text-slate-700">Hours</p>
-            <p className="text-slate-600">{BUSINESS_INFO.hours}</p>
+            <p className="text-slate-600">{BUSINESS_INFO.hoursSummary}</p>
+            <p className="text-slate-500 text-sm">{BUSINESS_INFO.closedDay}</p>
           </div>
           <div>
             <p className="font-medium text-slate-700">Delivery Area</p>
@@ -140,7 +142,7 @@ const Contact = () => {
           </button>
         </form>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

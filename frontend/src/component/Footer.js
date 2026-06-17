@@ -1,116 +1,89 @@
 import React from "react";
-import { FaFacebookF, FaTwitter, FaYoutube, FaInstagram } from "react-icons/fa";
-import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { FaFacebookF, FaInstagram, FaYoutube, FaCertificate, FaClock } from "react-icons/fa";
 import Wrapper from "./Wrapper";
-import { BUSINESS_INFO } from "../utility/businessInfo";
+import { BUSINESS_INFO, SOCIAL_LINKS } from "../utility/businessInfo";
+
+const HOMELY_LOGO = `${process.env.PUBLIC_URL || ""}/assets/homely-logo.png`;
+
+const socialItems = [
+  { label: "Facebook", href: SOCIAL_LINKS.facebook, icon: FaFacebookF },
+  { label: "Instagram", href: SOCIAL_LINKS.instagram, icon: FaInstagram },
+  { label: "YouTube", href: SOCIAL_LINKS.youtube, icon: FaYoutube },
+];
 
 const Footer = () => {
-  const isAdmin = useSelector((state) => state.user.isAdmin);
+  const { parentCompany, fssaiLabel, name, tagline, hoursSummary, closedDay } =
+    BUSINESS_INFO;
+
   return (
-    <footer className="bg-gradient-to-r from-red-800 via-yellow-600 to-yellow-500 text-white pt-14 pb-3">
-      <Wrapper className="flex justify-between flex-col md:flex-row gap-[50px] md:gap-0">
-        <div className="flex gap-[50px] md:gap-[75px] lg:gap-[100px] flex-col md:flex-row">
-          <div className="flex flex-col gap-3 shrink-0">
-            <div className="font-oswald font-medium uppercase text-sm">
-              HOMELY Meals
-            </div>
-            <div className="font-oswald font-medium uppercase text-sm">
-              {BUSINESS_INFO.address}
-            </div>
-            <div className="font-oswald font-medium uppercase text-sm">
-              PIN {BUSINESS_INFO.pin}
-            </div>
-            <div className="font-oswald font-medium uppercase text-sm">
-              PH {BUSINESS_INFO.phone}
-            </div>
-            <div className="text-sm text-white/80">
-              {BUSINESS_INFO.hours}
-            </div>
-            <div className="text-sm text-white/80">
-              Delivery: {BUSINESS_INFO.deliveryArea}
+    <footer className="bg-stone-950 text-stone-300">
+      <Wrapper className="py-5 md:py-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 md:gap-8">
+          <div className="flex items-center gap-3 md:gap-4 min-w-0">
+            <img
+              src={HOMELY_LOGO}
+              alt={`${parentCompany.name} — ${parentCompany.tagline}`}
+              className="h-16 md:h-[4.5rem] w-auto shrink-0 object-contain"
+            />
+            <div className="text-left min-w-0">
+              <p className="text-white font-bold text-base md:text-lg leading-tight">
+                {name}
+              </p>
+              <p className="text-orange-400 font-semibold text-sm md:text-base">
+                {tagline}
+              </p>
+              <p className="text-stone-400 text-sm mt-1 leading-snug">
+                Digital service of{" "}
+                <span className="text-stone-200 font-semibold">
+                  {parentCompany.name}
+                </span>
+              </p>
+              <div className="mt-1.5 text-sm font-semibold">
+                <p className="flex items-center gap-1.5 text-stone-300">
+                  <FaClock size={13} className="text-orange-400 shrink-0" />
+                  {hoursSummary}
+                </p>
+                <p className="text-stone-500 font-medium mt-0.5 pl-5">
+                  {closedDay}
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="flex gap-[50px] md:gap-[75px] lg:gap-[100px] shrink-0">
-            <div className="flex flex-col gap-3">
-              <div className="font-oswald font-medium uppercase text-sm">
-                Quick Links
-              </div>
-              <Link
-                to="/"
-                className="text-sm text-white/[0.5] hover:text-white"
-              >
-                Home
-              </Link>
-              <Link
-                to="/about"
-                className="text-sm text-white/[0.5] hover:text-white"
-              >
-                About Us
-              </Link>
-              <Link
-                to="/contact"
-                className="text-sm text-white/[0.5] hover:text-white"
-              >
-                Contact
-              </Link>
-              {!isAdmin && (
-                <Link
-                  to="/cart"
-                  className="text-sm text-white/[0.5] hover:text-white"
+          <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-start sm:items-center md:items-end lg:items-center gap-3 md:gap-4 shrink-0">
+            <div className="inline-flex items-center gap-2 rounded-md border border-emerald-700/50 bg-emerald-950/50 px-3 py-1.5 text-emerald-300">
+              <FaCertificate size={15} aria-hidden="true" />
+              <span className="text-sm font-semibold whitespace-nowrap">
+                {fssaiLabel}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {socialItems.map(({ label, href, icon: Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="w-9 h-9 rounded-full border border-stone-600 text-stone-200 flex items-center justify-center hover:border-orange-500 hover:text-orange-400 hover:bg-stone-900 transition-colors"
                 >
-                  Your Cart
-                </Link>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <div className="font-oswald font-medium uppercase text-sm">
-                Services
-              </div>
-              <div className="text-sm text-white/[0.5]">Cloud Kitchen</div>
-              <div className="text-sm text-white/[0.5]">Home Delivery</div>
-              <div className="text-sm text-white/[0.5]">Online Ordering</div>
-              <div className="text-sm text-white/[0.5]">Secure Payments</div>
+                  <Icon size={16} />
+                </a>
+              ))}
             </div>
           </div>
         </div>
+      </Wrapper>
 
-        <div className="flex gap-4 justify-center md:justify-start">
-          <div
-            onClick={() => window.open("https://facebook.com", "_blank")}
-            className="w-10 h-10 rounded-full bg-white/[0.25] flex items-center justify-center bg-gradient-to-r from-red-800 to-yellow-500 hover:via-yellow-600 cursor-pointer"
-          >
-            <FaFacebookF size={20} />
-          </div>
-          <div
-            onClick={() => window.open("https://twitter.com", "_blank")}
-            className="w-10 h-10 rounded-full bg-white/[0.25] flex items-center justify-center bg-gradient-to-r from-red-800 to-yellow-500 hover:via-yellow-600 cursor-pointer"
-          >
-            <FaTwitter size={20} />
-          </div>
-          <div className="w-10 h-10 rounded-full bg-white/[0.25] flex items-center justify-center bg-gradient-to-r from-red-800 to-yellow-500 hover:via-yellow-600 cursor-pointer">
-            <FaYoutube size={20} />
-          </div>
-          <div className="w-10 h-10 rounded-full bg-white/[0.25] flex items-center justify-center bg-gradient-to-r from-red-800 to-yellow-500 hover:via-yellow-600 cursor-pointer">
-            <FaInstagram size={20} />
-          </div>
-        </div>
-      </Wrapper>
-      <Wrapper className="flex justify-between mt-10 flex-col md:flex-row gap-[10px] md:gap-0">
-        <div className="text-[12px] text-white/[0.5] text-center md:text-left">
-          © {new Date().getFullYear()} HOMELY Meals. All Rights Reserved
-        </div>
-        <div className="flex gap-2 md:gap-5 text-center md:text-left flex-wrap justify-center">
-          <div className="text-[12px] text-white/[0.5] hover:text-white cursor-pointer">
-            Privacy Policy
-          </div>
-          <div className="text-[12px] text-white/[0.5] hover:text-white cursor-pointer">
-            Terms of Use
-          </div>
-        </div>
-      </Wrapper>
+      <div className="border-t border-stone-800">
+        <Wrapper className="py-2.5 flex justify-center md:justify-start">
+          <p className="text-sm text-stone-500 font-medium">
+            © {new Date().getFullYear()} {name} · {parentCompany.name}. All rights
+            reserved.
+          </p>
+        </Wrapper>
+      </div>
     </footer>
   );
 };

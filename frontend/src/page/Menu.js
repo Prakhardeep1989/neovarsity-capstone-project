@@ -5,6 +5,7 @@ import AllProduct from "../component/AllProduct";
 import { addCartItem } from "../redux/productSlide";
 import { getProductImage } from "../utility/productImages";
 import { formatCategory, formatStatus } from "../utility/productConstants";
+import PageLayout from "../component/PageLayout";
 
 const Menu = () => {
   const { filterby } = useParams();
@@ -32,25 +33,27 @@ const Menu = () => {
 
   if (!productData.length) {
     return (
-      <div className="p-8 text-center">
+      <PageLayout centered>
         <p className="text-slate-600 text-lg">Loading menu...</p>
-      </div>
+      </PageLayout>
     );
   }
 
   if (!productDisplay) {
     return (
-      <div className="p-8 text-center max-w-md mx-auto">
-        <p className="text-slate-600 text-lg mb-4">
+      <PageLayout centered contentClassName="max-w-md">
+        <p className="text-slate-600 text-lg mb-4 text-center">
           This dish was not found. It may have been removed from the menu.
         </p>
-        <Link
-          to="/menu"
-          className="inline-block bg-red-500 hover:bg-red-600 text-white font-medium px-6 py-2 rounded-full"
-        >
-          Browse Full Menu
-        </Link>
-      </div>
+        <div className="text-center">
+          <Link
+            to="/menu"
+            className="inline-block bg-red-500 hover:bg-red-600 text-white font-medium px-6 py-2 rounded-full"
+          >
+            Browse Full Menu
+          </Link>
+        </div>
+      </PageLayout>
     );
   }
 
@@ -58,9 +61,8 @@ const Menu = () => {
   const isAvailable = productDisplay.status === "AVAILABLE";
 
   return (
-    <div>
-      <div className="p-2 md:p-4">
-        <div className="w-full max-w-4xl m-auto md:flex bg-white rounded-lg shadow">
+    <PageLayout>
+      <div className="w-full max-w-4xl mx-auto md:flex bg-white rounded-lg shadow">
           <div className="max-w-sm overflow-hidden w-full p-5">
             <img
               src={imageSrc}
@@ -120,11 +122,11 @@ const Menu = () => {
             </div>
           </div>
         </div>
-      </div>
-      <div className="p-2 md:p-4">
+
+      <div className="mt-8">
         <AllProduct heading={"Related Products"} />
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

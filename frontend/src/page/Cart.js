@@ -9,6 +9,7 @@ import {
   loadRazorpayScript,
   verifyPayment,
 } from "../utility/orderApi";
+import PageLayout from "../component/PageLayout";
 
 const PHONE_REGEX = /^[6-9]\d{9}$/;
 
@@ -141,7 +142,7 @@ const Cart = () => {
   };
 
   return (
-    <div className="p-2 md:p-4">
+    <PageLayout>
       <h2 className="text-lg md:text-2xl font-bold text-slate-600 mb-4">
         Your Cart Items
       </h2>
@@ -273,7 +274,7 @@ const Cart = () => {
           <p className="text-slate-500 text-3xl font-bold">Empty Cart</p>
         </div>
       )}
-    </div>
+    </PageLayout>
   );
 };
 

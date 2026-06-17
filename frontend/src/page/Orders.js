@@ -12,6 +12,7 @@ import {
   getOrderCustomerName,
   updateOrderStatus,
 } from "../utility/orderApi";
+import PageLayout from "../component/PageLayout";
 
 const ADMIN_STATUS_TRANSITIONS = {
   ORDERED: ["PREPARING", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"],
@@ -470,7 +471,7 @@ const Orders = () => {
   const customerOrders = orders.filter((o) => o.status !== "DRAFT");
 
   return (
-    <div className="p-2 md:p-4">
+    <PageLayout>
       <h1 className="text-2xl font-bold text-slate-800 mb-1">
         {isAdmin ? "All Orders" : "My Orders"}
       </h1>
@@ -499,7 +500,7 @@ const Orders = () => {
           }
         />
       )}
-    </div>
+    </PageLayout>
   );
 };
 

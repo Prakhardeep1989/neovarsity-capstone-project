@@ -1,10 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { BUSINESS_INFO } from "../utility/businessInfo";
+import PageLayout from "../component/PageLayout";
 
 const About = () => {
   return (
-    <div className="p-4 md:p-8 max-w-4xl mx-auto">
+    <PageLayout narrow>
       <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mb-2">
         About HOMELY Meals
       </h1>
@@ -59,7 +60,7 @@ const About = () => {
           Browse Menu
         </Link>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

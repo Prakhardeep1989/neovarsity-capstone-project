@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { clearCart } from "../redux/productSlide";
 import { toast } from "react-hot-toast";
+import PageLayout from "../component/PageLayout";
 
 const Success = () => {
   const dispatch = useDispatch();
@@ -47,8 +48,8 @@ const Success = () => {
   }, [cartItems, dispatch, user]);
 
   return (
-    <div className="p-4 md:p-8 max-w-lg mx-auto text-center">
-      <div className="bg-green-100 border border-green-300 rounded-lg p-8 shadow">
+    <PageLayout centered contentClassName="max-w-lg">
+      <div className="w-full bg-green-100 border border-green-300 rounded-lg p-8 shadow text-center">
         <p className="text-5xl mb-4">✓</p>
         <h1 className="text-2xl font-bold text-green-800 mb-2">
           Payment Successful!
@@ -64,7 +65,7 @@ const Success = () => {
           Continue Shopping
         </Link>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

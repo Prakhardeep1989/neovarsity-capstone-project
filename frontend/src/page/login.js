@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { loginRedux } from "../redux/userSlice";
+import PageLayout from "../component/PageLayout";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -67,8 +68,8 @@ const Login = () => {
   };
 
   return (
-    <div className="p-3 md:p-4">
-      <div className="w-full max-w-sm bg-white m-auto flex  flex-col p-4">
+    <PageLayout centered>
+      <div className="w-full max-w-sm bg-white flex flex-col p-4 rounded-lg shadow">
         <div className="w-20 h-20 overflow-hidden rounded-full drop-shadow-md shadow-md m-auto relative">
           <img src={loginSignupImage} alt="Login" className="w-full h-full object-cover" />
         </div>
@@ -111,7 +112,7 @@ const Login = () => {
           </Link>
         </p>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

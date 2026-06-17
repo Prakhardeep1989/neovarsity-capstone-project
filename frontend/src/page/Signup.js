@@ -4,6 +4,7 @@ import { BiShow, BiHide } from "react-icons/bi";
 import { Link, useNavigate } from "react-router-dom";
 import { ImagetoBase64 } from "../utility/ImagetoBase64";
 import { toast } from "react-hot-toast";
+import PageLayout from "../component/PageLayout";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -81,8 +82,8 @@ const Signup = () => {
   };
 
   return (
-    <div className="p-3 md:p-4">
-      <div className="w-full max-w-sm bg-white m-auto flex  flex-col p-4">
+    <PageLayout centered>
+      <div className="w-full max-w-sm bg-white flex flex-col p-4 rounded-lg shadow">
         {/* <h1 className="text-center text-2xl font-bold">Sign up</h1> */}
         <div className="w-20 h-20 overflow-hidden rounded-full drop-shadow-md shadow-md m-auto relative">
           <img
@@ -179,7 +180,7 @@ const Signup = () => {
           </Link>
         </p>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 
