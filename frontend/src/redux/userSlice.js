@@ -15,6 +15,8 @@ const initialState = storedUser || {
   image: "",
   lastName: "",
   _id: "",
+  role: "CUSTOMER",
+  token: "",
   isAdmin: false,
 };
 
@@ -23,13 +25,16 @@ export const userSlice = createSlice({
   initialState,
   reducers: {
     loginRedux: (state, action) => {
-      state._id = action.payload.data._id;
-      state.firstName = action.payload.data.firstName;
-      state.lastName = action.payload.data.lastName;
-      state.email = action.payload.data.email;
-      state.image = action.payload.data.image || "";
-      state.isAdmin = Boolean(action.payload.data.isAdmin);
-      localStorage.setItem("homelyUser", JSON.stringify(action.payload.data));
+      const userData = action.payload.data;
+      state._id = userData._id;
+      state.firstName = userData.firstName;
+      state.lastName = userData.lastName;
+      state.email = userData.email;
+      state.image = userData.image || "";
+      state.role = userData.role || "CUSTOMER";
+      state.token = userData.token || "";
+      state.isAdmin = userData.role === "ADMIN";
+      localStorage.setItem("homelyUser", JSON.stringify(userData));
     },
     logoutRedux: (state) => {
       state._id = "";
@@ -37,6 +42,8 @@ export const userSlice = createSlice({
       state.lastName = "";
       state.email = "";
       state.image = "";
+      state.role = "CUSTOMER";
+      state.token = "";
       state.isAdmin = false;
       localStorage.removeItem("homelyUser");
     },

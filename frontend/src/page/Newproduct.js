@@ -45,7 +45,7 @@ const Newproduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!isLoggedIn || !isAdmin) {
+    if (!isLoggedIn || !isAdmin || !userData.token) {
       toast("Unauthorized: admin access required");
       return;
     }
@@ -59,7 +59,7 @@ const Newproduct = () => {
           method: "POST",
           headers: {
             "content-type": "application/json",
-            "x-admin-email": userData.email,
+            Authorization: `Bearer ${userData.token}`,
           },
           body: JSON.stringify(data),
         }

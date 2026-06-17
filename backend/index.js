@@ -4,6 +4,8 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv").config();
 const Stripe = require("stripe");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const createAuthMiddleware = require("./middleware/auth");
 
 const app = express();
 app.use(cors());
@@ -29,9 +31,15 @@ const userSchema = mongoose.Schema({
   },
   password: String,
   image: String,
+  role: {
+    type: String,
+    enum: ["CUSTOMER", "ADMIN"],
+    default: "CUSTOMER",
+  },
 });
 
 const userModel = mongoose.model("user", userSchema);
+const { protectRoute, adminOnly } = createAuthMiddleware(userModel);
 
 const schemaProduct = mongoose.Schema({
   name: String,
@@ -84,19 +92,6 @@ const orderSchema = mongoose.Schema({
 });
 const orderModel = mongoose.model("order", orderSchema);
 
-const requireAdmin = (req, res, next) => {
-  const adminEmail = req.headers["x-admin-email"];
-  if (
-    adminEmail &&
-    adminEmail.toLowerCase().trim() ===
-      process.env.ADMIN_EMAIL?.toLowerCase().trim()
-  ) {
-    next();
-  } else {
-    res.status(403).send({ message: "Unauthorized: admin access required", alert: false });
-  }
-};
-
 app.get("/", (req, res) => {
   res.send("HOMELY Meals API is running");
 });
@@ -129,6 +124,7 @@ app.post("/signup", async (req, res) => {
       email,
       password: hashedPassword,
       image,
+      role: "CUSTOMER",
     });
 
     res.send({ message: "Successfully sign up", alert: true });
@@ -153,13 +149,18 @@ app.post("/login", async (req, res) => {
       });
     }
 
-    const passwordMatch = result.password.startsWith("$2")
-      ? await bcrypt.compare(password, result.password)
-      : password === result.password;
+    const passwordMatch = await bcrypt.compare(password, result.password);
 
     if (!passwordMatch) {
       return res.send({ message: "Invalid password", alert: false });
     }
+
+    const role = result.role || "CUSTOMER";
+    const token = jwt.sign(
+      { id: result._id, role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     const dataSend = {
       _id: result._id,
@@ -167,9 +168,9 @@ app.post("/login", async (req, res) => {
       lastName: result.lastName,
       email: result.email,
       image: result.image,
-      isAdmin:
-        result.email?.toLowerCase().trim() ===
-        process.env.ADMIN_EMAIL?.toLowerCase().trim(),
+      role,
+      isAdmin: role === "ADMIN",
+      token,
     };
 
     res.send({
@@ -182,7 +183,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.post("/uploadProduct", requireAdmin, async (req, res) => {
+app.post("/uploadProduct", protectRoute, adminOnly, async (req, res) => {
   try {
     const data = await productModel(req.body);
     await data.save();
