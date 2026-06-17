@@ -3,26 +3,26 @@ import Header from "./component/Header";
 import { Outlet } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setDataProduct } from "./redux/productSlide";
 import Footer from "./component/Footer";
+import { fetchProducts } from "./utility/productApi";
 
 function App() {
   const dispatch = useDispatch();
+  const token = useSelector((state) => state.user.token);
 
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_SERVER_DOMIN}/product`);
-        const resData = await res.json();
-        const products = Array.isArray(resData) ? resData : [];
+        const products = await fetchProducts(token);
         dispatch(setDataProduct(products));
       } catch {
         dispatch(setDataProduct([]));
       }
     })();
-  }, [dispatch]);
-  //  console.log(productData); // {productList: Array(0), cartItem: Array(0)}
+  }, [dispatch, token]);
+
   return (
     <>
       <Toaster />

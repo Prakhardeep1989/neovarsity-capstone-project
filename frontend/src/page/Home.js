@@ -8,12 +8,9 @@ import AllProduct from "../component/AllProduct";
 const Home = () => {
   const productData = useSelector((state) => state.product.productList);
   const homeProductCartList = productData.slice(0, 4);
-  const homeProductCartListVegetables = productData.filter(
-    (el) => el.category === "vegetable",
-    []
-  );
+  const thaliProducts = productData.filter((el) => el.category === "THALI");
   const loadingArray = new Array(4).fill(null);
-  const loadingArrayFeature = new Array(10).fill(null);
+  const loadingArrayFeature = new Array(6).fill(null);
 
   const slideProductRef = useRef();
   const nextProduct = () => {
@@ -59,30 +56,26 @@ const Home = () => {
 
         <div className="md:w-1/2 flex flex-wrap gap-5 p-4 justify-center">
           {homeProductCartList[0]
-            ? homeProductCartList.map((el) => {
-                return (
-                  <HomeCard
-                    key={el._id}
-                    id={el._id}
-                    image={el.image}
-                    name={el.name}
-                    price={el.price}
-                    category={el.category}
-                  />
-                );
-              })
-            : loadingArray.map((el, index) => {
-                return (
-                  <HomeCard key={index + "loading"} loading={"Loading..."} />
-                );
-              })}
+            ? homeProductCartList.map((el) => (
+                <HomeCard
+                  key={el._id}
+                  id={el._id}
+                  image={el.image}
+                  name={el.name}
+                  price={el.price}
+                  category={el.category}
+                />
+              ))
+            : loadingArray.map((el, index) => (
+                <HomeCard key={index + "loading"} loading={"Loading..."} />
+              ))}
         </div>
       </div>
 
       <div className="">
         <div className="flex w-full items-center">
           <h2 className="font-bold text-2xl text-slate-800 mb-4">
-            Fresh Vegetables
+            Thali Specials
           </h2>
           <div className="ml-auto flex gap-4">
             <button
@@ -103,19 +96,18 @@ const Home = () => {
           className="flex gap-5 overflow-scroll scrollbar-none scroll-smooth transition-all"
           ref={slideProductRef}
         >
-          {homeProductCartListVegetables[0]
-            ? homeProductCartListVegetables.map((el) => {
-                return (
-                  <CardFeature
-                    key={el._id + "vegetable"}
-                    id={el._id}
-                    name={el.name}
-                    category={el.category}
-                    price={el.price}
-                    image={el.image}
-                  />
-                );
-              })
+          {thaliProducts[0]
+            ? thaliProducts.map((el) => (
+                <CardFeature
+                  key={el._id + "thali"}
+                  id={el._id}
+                  name={el.name}
+                  category={el.category}
+                  price={el.price}
+                  image={el.image}
+                  status={el.status}
+                />
+              ))
             : loadingArrayFeature.map((el, index) => (
                 <CardFeature loading="Loading..." key={index + "cartLoading"} />
               ))}
@@ -123,7 +115,7 @@ const Home = () => {
       </div>
 
       <div id="menu-section">
-        <AllProduct heading={"Your Product"} />
+        <AllProduct heading={"Our Menu"} />
       </div>
     </div>
   );

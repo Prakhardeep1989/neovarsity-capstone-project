@@ -15,6 +15,7 @@ const PORT = process.env.PORT || 8080;
 const SALT_ROUNDS = 10;
 
 const seedProducts = require("./seedProducts");
+const { validateProductInput } = require("./utils/productValidation");
 
 mongoose.set("strictQuery", false);
 mongoose
@@ -41,13 +42,25 @@ const userSchema = mongoose.Schema({
 const userModel = mongoose.model("user", userSchema);
 const { protectRoute, adminOnly } = createAuthMiddleware(userModel);
 
-const schemaProduct = mongoose.Schema({
-  name: String,
-  category: String,
-  image: String,
-  price: String,
-  description: String,
-});
+const schemaProduct = mongoose.Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    description: { type: String, required: true, trim: true },
+    image: { type: String, required: true },
+    price: { type: Number, required: true, min: 0.01 },
+    status: {
+      type: String,
+      enum: ["AVAILABLE", "INACTIVE"],
+      default: "AVAILABLE",
+    },
+    category: {
+      type: String,
+      enum: ["THALI", "COMBO_MEAL", "ADD_ON"],
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
 const productModel = mongoose.model("product", schemaProduct);
 
 const seedMenuIfEmpty = async () => {
@@ -55,31 +68,26 @@ const seedMenuIfEmpty = async () => {
   if (count === 0) {
     await productModel.insertMany(seedProducts);
     console.log(`Seeded ${seedProducts.length} sample menu items`);
-    return;
-  }
-
-  const missingImages = await productModel.find({
-    $or: [{ image: { $exists: false } }, { image: null }, { image: "" }],
-  });
-
-  for (const product of missingImages) {
-    const match =
-      seedProducts.find((s) => s.name === product.name) ||
-      seedProducts.find((s) => s.category === product.category);
-    if (match) {
-      await productModel.updateOne(
-        { _id: product._id },
-        { $set: { image: match.image, description: product.description || match.description } }
-      );
-    }
-  }
-
-  if (missingImages.length > 0) {
-    console.log(`Updated images for ${missingImages.length} products`);
   }
 };
 
 seedMenuIfEmpty().catch((err) => console.log("Seed error:", err));
+
+const getOptionalUser = async (req) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return null;
+    }
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return await userModel.findById(decoded.id).select("-password");
+  } catch {
+    return null;
+  }
+};
+
+const isAdminUser = (user) => user?.role === "ADMIN";
 
 const orderSchema = mongoose.Schema({
   userEmail: String,
@@ -184,18 +192,111 @@ app.post("/login", async (req, res) => {
 });
 
 app.post("/uploadProduct", protectRoute, adminOnly, async (req, res) => {
-  try {
-    const data = await productModel(req.body);
-    await data.save();
-    res.send({ message: "Upload successfully", alert: true });
-  } catch (err) {
-    res.status(500).send({ message: "Upload failed", alert: false });
-  }
+  res.status(410).send({
+    message: "This endpoint is deprecated. Use POST /api/products/admin",
+    alert: false,
+  });
 });
 
 app.get("/product", async (req, res) => {
-  const data = await productModel.find({});
+  const user = await getOptionalUser(req);
+  const filter = isAdminUser(user) ? {} : { status: "AVAILABLE" };
+  const data = await productModel.find(filter).sort({ createdAt: -1 });
   res.json(data);
+});
+
+app.get("/api/products", async (req, res) => {
+  try {
+    const user = await getOptionalUser(req);
+    const filter = isAdminUser(user) ? {} : { status: "AVAILABLE" };
+    const products = await productModel.find(filter).sort({ createdAt: -1 });
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch products", alert: false });
+  }
+});
+
+app.get("/api/products/:id", async (req, res) => {
+  try {
+    const user = await getOptionalUser(req);
+    const product = await productModel.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found", alert: false });
+    }
+
+    if (!isAdminUser(user) && product.status !== "AVAILABLE") {
+      return res.status(404).json({ message: "Product not found", alert: false });
+    }
+
+    res.json(product);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch product", alert: false });
+  }
+});
+
+app.post("/api/products/admin", protectRoute, adminOnly, async (req, res) => {
+  try {
+    const { errors, data } = validateProductInput(req.body);
+
+    if (errors.length) {
+      return res.status(400).json({ message: errors.join(", "), alert: false });
+    }
+
+    const product = await productModel.create(data);
+    res.status(201).json({
+      message: "Product created successfully",
+      alert: true,
+      data: product,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to create product", alert: false });
+  }
+});
+
+app.put("/api/products/admin/:id", protectRoute, adminOnly, async (req, res) => {
+  try {
+    const { errors, data } = validateProductInput(req.body, { isUpdate: true });
+
+    if (errors.length) {
+      return res.status(400).json({ message: errors.join(", "), alert: false });
+    }
+
+    if (Object.keys(data).length === 0) {
+      return res.status(400).json({ message: "No valid fields to update", alert: false });
+    }
+
+    const product = await productModel.findByIdAndUpdate(req.params.id, data, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found", alert: false });
+    }
+
+    res.json({
+      message: "Product updated successfully",
+      alert: true,
+      data: product,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to update product", alert: false });
+  }
+});
+
+app.delete("/api/products/admin/:id", protectRoute, adminOnly, async (req, res) => {
+  try {
+    const product = await productModel.findByIdAndDelete(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found", alert: false });
+    }
+
+    res.json({ message: "Product deleted successfully", alert: true });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to delete product", alert: false });
+  }
 });
 
 app.post("/save-order", async (req, res) => {

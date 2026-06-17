@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import AllProduct from "../component/AllProduct";
 import { addCartItem } from "../redux/productSlide";
 import { getProductImage } from "../utility/productImages";
+import { formatCategory, formatStatus } from "../utility/productConstants";
 
 const Menu = () => {
   const { filterby } = useParams();
@@ -54,6 +55,7 @@ const Menu = () => {
   }
 
   const imageSrc = getProductImage(productDisplay.image, productDisplay.category);
+  const isAvailable = productDisplay.status === "AVAILABLE";
 
   return (
     <div>
@@ -71,18 +73,31 @@ const Menu = () => {
           </div>
 
           <div className="flex flex-col gap-1 p-4">
-            <h3 className="font-semibold text-slate-600 capitalize text-2xl md:text-4xl">
+            <h3 className="font-semibold text-slate-600 text-2xl md:text-4xl">
               {productDisplay.name}
             </h3>
-            <p className="text-slate-500 font-medium text-2xl capitalize">
-              {productDisplay.category}
-            </p>
+            <div className="flex flex-wrap gap-2 mt-1">
+              <span className="text-sm px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                {formatCategory(productDisplay.category)}
+              </span>
+              {isAdmin && (
+                <span
+                  className={`text-sm px-2 py-0.5 rounded-full ${
+                    isAvailable
+                      ? "bg-green-600 text-white"
+                      : "bg-orange-500 text-white"
+                  }`}
+                >
+                  {formatStatus(productDisplay.status)}
+                </span>
+              )}
+            </div>
             <p className="font-bold md:text-2xl">
               <span className="text-red-500">₹</span>
               <span>{productDisplay.price}</span>
             </p>
             <div className="flex gap-3">
-              {!isAdmin && (
+              {!isAdmin && isAvailable && (
                 <>
                   <button
                     onClick={handleBuy}
@@ -101,7 +116,7 @@ const Menu = () => {
             </div>
             <div>
               <p className="text-slate-600 font-medium">Description:</p>
-              <p>{productDisplay.description || "Homely meal prepared fresh for you."}</p>
+              <p>{productDisplay.description}</p>
             </div>
           </div>
         </div>

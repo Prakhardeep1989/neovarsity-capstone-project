@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BRAND_LOGO } from "../utility/productImages";
 import { HiOutlineUserCircle } from "react-icons/hi";
 import { BsCartFill } from "react-icons/bs";
@@ -12,6 +12,7 @@ const Header = () => {
   const menuRef = useRef(null);
   const userData = useSelector((state) => state.user);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const isLoggedIn = Boolean(userData.email);
   const isAdmin = Boolean(userData.isAdmin);
@@ -40,6 +41,7 @@ const Header = () => {
     dispatch(logoutRedux());
     setShowMenu(false);
     toast("Logout successfully");
+    navigate("/");
   };
 
   const cartItemNumber = useSelector((state) => state.product.cartItem);
@@ -66,11 +68,6 @@ const Header = () => {
             <Link to={"about"}>About</Link>
             <Link to={"menu"}>Menu</Link>
             <Link to={"contact"}>Contact</Link>
-            {isLoggedIn && isAdmin && (
-              <Link to={"newproduct"} className="text-red-600 font-medium">
-                New Product
-              </Link>
-            )}
           </nav>
           {!isAdmin && (
             <div className="text-2xl text-slate-600 relative">

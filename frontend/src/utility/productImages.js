@@ -1,14 +1,7 @@
 const categoryImages = {
-  fruits: "https://images.unsplash.com/photo-1610831308542-5873a349d2eb?w=400&auto=format&fit=crop",
-  vegetable: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&auto=format&fit=crop",
-  icream: "https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&auto=format&fit=crop",
-  dosa: "https://images.unsplash.com/photo-1630383249896-424e482dfaeb?w=400&auto=format&fit=crop",
-  pizza: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&auto=format&fit=crop",
-  rice: "https://images.unsplash.com/photo-1516684669130-aa58539042e5?w=400&auto=format&fit=crop",
-  cake: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&auto=format&fit=crop",
-  burger: "https://images.unsplash.com/photo-1568901347635-c4030a548a92?w=400&auto=format&fit=crop",
-  panner: "https://images.unsplash.com/photo-1631452181589-215fdab553a8?w=400&auto=format&fit=crop",
-  sandwich: "https://images.unsplash.com/photo-1528735602782-2552fd46c207?w=400&auto=format&fit=crop",
+  THALI: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&auto=format&fit=crop",
+  COMBO_MEAL: "https://images.unsplash.com/photo-1516684669130-aa58539042e5?w=400&auto=format&fit=crop",
+  ADD_ON: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&auto=format&fit=crop",
   other: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&auto=format&fit=crop",
 };
 
