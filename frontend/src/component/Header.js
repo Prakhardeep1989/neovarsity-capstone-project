@@ -72,14 +72,16 @@ const Header = () => {
               </Link>
             )}
           </nav>
-          <div className="text-2xl text-slate-600 relative">
-            <Link to={"cart"}>
-              <BsCartFill />
-              <div className="absolute -top-1 -right-1 text-white bg-red-500 h-4 w-4 rounded-full m-0 p-0 text-sm text-center ">
-                {cartItemNumber.length}
-              </div>
-            </Link>
-          </div>
+          {!isAdmin && (
+            <div className="text-2xl text-slate-600 relative">
+              <Link to={"cart"}>
+                <BsCartFill />
+                <div className="absolute -top-1 -right-1 text-white bg-red-500 h-4 w-4 rounded-full m-0 p-0 text-sm text-center ">
+                  {cartItemNumber.length}
+                </div>
+              </Link>
+            </div>
+          )}
           <div className=" text-slate-600 relative" ref={menuRef}>
             <div
               className="text-3xl cursor-pointer w-8 h-8 rounded-full overflow-hidden drop-shadow-md"

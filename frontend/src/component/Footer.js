@@ -1,10 +1,12 @@
 import React from "react";
 import { FaFacebookF, FaTwitter, FaYoutube, FaInstagram } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import Wrapper from "./Wrapper";
 import { BUSINESS_INFO } from "../utility/businessInfo";
 
 const Footer = () => {
+  const isAdmin = useSelector((state) => state.user.isAdmin);
   return (
     <footer className="bg-gradient-to-r from-red-800 via-yellow-600 to-yellow-500 text-white pt-14 pb-3">
       <Wrapper className="flex justify-between flex-col md:flex-row gap-[50px] md:gap-0">
@@ -53,12 +55,14 @@ const Footer = () => {
               >
                 Contact
               </Link>
-              <Link
-                to="/cart"
-                className="text-sm text-white/[0.5] hover:text-white"
-              >
-                Your Cart
-              </Link>
+              {!isAdmin && (
+                <Link
+                  to="/cart"
+                  className="text-sm text-white/[0.5] hover:text-white"
+                >
+                  Your Cart
+                </Link>
+              )}
             </div>
 
             <div className="flex flex-col gap-3">

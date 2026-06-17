@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import CartProduct from "../component/cartProduct";
 import emptyCartImage from "../assest/empty.gif";
@@ -10,6 +10,16 @@ const Cart = () => {
   const productCartItem = useSelector((state) => state.product.cartItem);
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user.isAdmin) {
+      navigate("/", { replace: true });
+    }
+  }, [user.isAdmin, navigate]);
+
+  if (user.isAdmin) {
+    return null;
+  }
 
   const totalPrice = productCartItem.reduce(
     (acc, curr) => acc + parseInt(curr.total),

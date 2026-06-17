@@ -14,6 +14,15 @@ export const productSlice = createSlice({
       state.productList = [...action.payload];
     },
     addCartItem: (state, action) => {
+      try {
+        const user = JSON.parse(localStorage.getItem("homelyUser") || "null");
+        if (user?.role === "ADMIN" || user?.isAdmin) {
+          return;
+        }
+      } catch {
+        // ignore invalid stored user data
+      }
+
       const check = state.cartItem.some((el) => el._id === action.payload._id);
       if (check) {
         toast("Already Item in Cart");

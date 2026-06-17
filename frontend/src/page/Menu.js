@@ -10,6 +10,7 @@ const Menu = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const productData = useSelector((state) => state.product.productList);
+  const isAdmin = useSelector((state) => state.user.isAdmin);
 
   const productDisplay = productData.find(
     (el) => String(el._id) === String(filterby)
@@ -81,18 +82,22 @@ const Menu = () => {
               <span>{productDisplay.price}</span>
             </p>
             <div className="flex gap-3">
-              <button
-                onClick={handleBuy}
-                className="bg-yellow-500 py-1 mt-2 rounded hover:bg-yellow-600 min-w-[100px]"
-              >
-                Buy
-              </button>
-              <button
-                onClick={handleAddCartProduct}
-                className="bg-yellow-500 py-1 mt-2 rounded hover:bg-yellow-600 min-w-[100px]"
-              >
-                Add Cart
-              </button>
+              {!isAdmin && (
+                <>
+                  <button
+                    onClick={handleBuy}
+                    className="bg-yellow-500 py-1 mt-2 rounded hover:bg-yellow-600 min-w-[100px]"
+                  >
+                    Buy
+                  </button>
+                  <button
+                    onClick={handleAddCartProduct}
+                    className="bg-yellow-500 py-1 mt-2 rounded hover:bg-yellow-600 min-w-[100px]"
+                  >
+                    Add Cart
+                  </button>
+                </>
+              )}
             </div>
             <div>
               <p className="text-slate-600 font-medium">Description:</p>

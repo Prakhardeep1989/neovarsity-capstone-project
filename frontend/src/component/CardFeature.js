@@ -1,5 +1,5 @@
 import React from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { addCartItem } from "../redux/productSlide";
 
@@ -7,6 +7,7 @@ import { getProductImage } from "../utility/productImages";
 
 const CardFeature = ({ image, name, price, category, loading, id }) => {
   const dispatch = useDispatch();
+  const isAdmin = useSelector((state) => state.user.isAdmin);
   const imageSrc = getProductImage(image, category);
 
   const handleAddCartProduct = (e) => {
@@ -48,12 +49,14 @@ const CardFeature = ({ image, name, price, category, loading, id }) => {
               <span>{price}</span>
             </p>
           </Link>
-          <button
-            className="bg-yellow-500 py-1 mt-2 rounded hover:bg-yellow-600 w-full"
-            onClick={handleAddCartProduct}
-          >
-            Add Cart
-          </button>
+          {!isAdmin && (
+            <button
+              className="bg-yellow-500 py-1 mt-2 rounded hover:bg-yellow-600 w-full"
+              onClick={handleAddCartProduct}
+            >
+              Add Cart
+            </button>
+          )}
         </>
       ) : (
         <div className="min-h-[150px] flex justify-center items-center">
