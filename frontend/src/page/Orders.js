@@ -12,12 +12,14 @@ import {
   updateOrderStatus,
 } from "../utility/orderApi";
 
-const ADMIN_STATUS_OPTIONS = [
-  "PREPARING",
-  "OUT_FOR_DELIVERY",
-  "DELIVERED",
-  "CANCELLED",
-];
+const ADMIN_STATUS_TRANSITIONS = {
+  ORDERED: ["PREPARING", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"],
+  PREPARING: ["OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"],
+  OUT_FOR_DELIVERY: ["DELIVERED", "CANCELLED"],
+};
+
+const getAdminStatusOptions = (currentStatus) =>
+  ADMIN_STATUS_TRANSITIONS[currentStatus] || [];
 
 const statusColor = (status) => {
   const map = {
@@ -168,26 +170,37 @@ const AdminOrders = ({ orders, onStatusUpdate }) => {
                 {formatOrderDate(order.createdAt)}
               </td>
               <td className="px-3 py-3">
-                {order.status !== "DELIVERED" && order.status !== "CANCELLED" && (
-                  <select
-                    className="bg-slate-100 border border-slate-200 rounded px-2 py-1 text-xs"
-                    value=""
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        handleStatusChange(order._id, e.target.value);
-                        e.target.value = "";
-                      }
-                    }}
-                  >
-                    <option value="">Update…</option>
-                    {ADMIN_STATUS_OPTIONS.filter((s) => s !== order.status).map(
-                      (s) => (
-                        <option key={s} value={s}>
-                          {formatOrderStatus(s)}
-                        </option>
-                      )
+                {getAdminStatusOptions(order.status).length > 0 && (
+                  <div className="flex flex-col gap-2 min-w-[140px]">
+                    {getAdminStatusOptions(order.status).includes("DELIVERED") && (
+                      <button
+                        type="button"
+                        className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1.5 rounded font-medium whitespace-nowrap"
+                        onClick={() => handleStatusChange(order._id, "DELIVERED")}
+                      >
+                        Mark Delivered
+                      </button>
                     )}
-                  </select>
+                    <select
+                      className="bg-slate-100 border border-slate-200 rounded px-2 py-1 text-xs"
+                      value=""
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          handleStatusChange(order._id, e.target.value);
+                          e.target.value = "";
+                        }
+                      }}
+                    >
+                      <option value="">More actions…</option>
+                      {getAdminStatusOptions(order.status)
+                        .filter((s) => s !== "DELIVERED")
+                        .map((s) => (
+                          <option key={s} value={s}>
+                            {formatOrderStatus(s)}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
                 )}
               </td>
             </tr>

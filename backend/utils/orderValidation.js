@@ -9,6 +9,12 @@ const ADMIN_ORDER_STATUSES = [
   "CANCELLED",
 ];
 
+const ADMIN_STATUS_TRANSITIONS = {
+  ORDERED: ["PREPARING", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"],
+  PREPARING: ["OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"],
+  OUT_FOR_DELIVERY: ["DELIVERED", "CANCELLED"],
+};
+
 const validateDeliveryDetails = (deliveryDetails) => {
   const errors = [];
   const { fullName, phone, addressLine1 } = deliveryDetails || {};
@@ -62,9 +68,28 @@ const validateAdminStatusUpdate = (status) => {
   return { valid: true };
 };
 
+const validateAdminStatusTransition = (currentStatus, newStatus) => {
+  const allowed = ADMIN_STATUS_TRANSITIONS[currentStatus];
+  if (!allowed) {
+    return {
+      valid: false,
+      message: `Cannot update an order with status ${currentStatus}`,
+    };
+  }
+  if (!allowed.includes(newStatus)) {
+    return {
+      valid: false,
+      message: `Cannot change status from ${currentStatus} to ${newStatus}`,
+    };
+  }
+  return { valid: true };
+};
+
 module.exports = {
   validateDeliveryDetails,
   validateCartItems,
   validateAdminStatusUpdate,
+  validateAdminStatusTransition,
   ADMIN_ORDER_STATUSES,
+  ADMIN_STATUS_TRANSITIONS,
 };

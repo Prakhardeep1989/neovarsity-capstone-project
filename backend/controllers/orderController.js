@@ -3,6 +3,7 @@ const {
   validateDeliveryDetails,
   validateCartItems,
   validateAdminStatusUpdate,
+  validateAdminStatusTransition,
 } = require("../utils/orderValidation");
 
 const createOrderController = ({ orderModel, productModel, razorpay }) => {
@@ -191,11 +192,19 @@ const createOrderController = ({ orderModel, productModel, razorpay }) => {
         });
       }
 
+      const transition = validateAdminStatusTransition(order.status, status);
+      if (!transition.valid) {
+        return res.status(400).json({ message: transition.message, alert: false });
+      }
+
       order.status = status;
       await order.save();
 
       res.json({
-        message: "Order status updated",
+        message:
+          status === "DELIVERED"
+            ? "Order marked as delivered"
+            : "Order status updated",
         alert: true,
         data: order,
       });
