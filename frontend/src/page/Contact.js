@@ -1,10 +1,20 @@
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
 import { BUSINESS_INFO } from "../utility/businessInfo";
 import { sendContactMessage } from "../utility/contactApi";
 
+const getPrefilledFields = (user, message = "") => ({
+  name: user.email
+    ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
+    : "",
+  email: user.email || "",
+  message,
+});
+
 const Contact = () => {
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const user = useSelector((state) => state.user);
+  const [form, setForm] = useState(() => getPrefilledFields(user));
   const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
@@ -30,7 +40,7 @@ const Contact = () => {
 
       toast(response.message);
       if (response.alert) {
-        setForm({ name: "", email: "", message: "" });
+        setForm(getPrefilledFields(user));
       }
     } catch {
       toast("Failed to send message. Please try again.");
