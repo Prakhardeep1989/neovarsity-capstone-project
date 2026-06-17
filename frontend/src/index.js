@@ -21,9 +21,11 @@ import { Provider } from "react-redux";
 import { store } from "./redux/index";
 import Cart from "./page/Cart";
 import ErragePage from "./page/ErragePage";
-import PaymentSuccess from "./page/PaymentSuccess";
+import PaymentSuccessPage from "./page/PaymentSuccess";
 import Orders from "./page/Orders";
 import Cancel from "./page/Cancel";
+
+const paymentSuccessElement = <PaymentSuccessPage />;
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -37,9 +39,9 @@ const router = createBrowserRouter(
       <Route path="newproduct" element={<Newproduct />} />
       <Route path="signup" element={<Signup />} />
       <Route path="cart" element={<Cart />} />
-      <Route path="payment-success" element={<PaymentSuccess />} />
+      <Route path="payment-success" element={paymentSuccessElement} />
       <Route path="orders" element={<Orders />} />
-      <Route path="success" element={<PaymentSuccess />} />
+      <Route path="success" element={paymentSuccessElement} />
       <Route path="cancel" element={<Cancel />} />
 
       <Route path="*" element={<ErragePage />} />

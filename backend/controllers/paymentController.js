@@ -1,9 +1,11 @@
 const crypto = require("crypto");
 const { markOrderAsPaid } = require("../services/paymentHelper");
+const { processRazorpayWebhook } = require("../services/razorpayWebhookService");
 const {
-  parseRazorpayPayment,
-  fetchRazorpayPaymentDetails,
-} = require("../utils/razorpayPaymentDetails");
+  verifyWebhookSignature,
+  parseWebhookBody,
+} = require("../utils/razorpayWebhook");
+const { fetchRazorpayPaymentDetails } = require("../utils/razorpayPaymentDetails");
 
 const createPaymentController = ({ orderModel, razorpay }) => {
   const verifyPaymentSignature = (orderId, paymentId, signature) => {
@@ -93,62 +95,19 @@ const createPaymentController = ({ orderModel, razorpay }) => {
 
   const handleRazorpayWebhook = async (req, res) => {
     try {
-      const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
       const signature = req.headers["x-razorpay-signature"];
       const rawBody = req.body;
 
-      if (webhookSecret && signature) {
-        const expectedSignature = crypto
-          .createHmac("sha256", webhookSecret)
-          .update(rawBody)
-          .digest("hex");
-
-        if (expectedSignature !== signature) {
-          console.error("[RAZORPAY] Webhook signature mismatch");
-          return res.status(400).json({ message: "Invalid webhook signature" });
-        }
-      } else if (!webhookSecret) {
-        console.warn(
-          "[RAZORPAY] RAZORPAY_WEBHOOK_SECRET not set — skipping signature verification (dev only)"
-        );
+      const verification = verifyWebhookSignature(rawBody, signature);
+      if (!verification.valid) {
+        console.error("[RAZORPAY] Webhook rejected:", verification.reason);
+        return res.status(400).json({ message: verification.reason });
       }
 
-      const eventBody =
-        Buffer.isBuffer(rawBody) ? JSON.parse(rawBody.toString()) : req.body;
-      const event = eventBody?.event;
+      const eventBody = parseWebhookBody(rawBody);
+      const result = await processRazorpayWebhook(orderModel, eventBody);
 
-      if (event === "payment.captured") {
-        const payment = eventBody.payload?.payment?.entity;
-        const razorpayOrderId = payment?.order_id;
-        const razorpayPaymentId = payment?.id;
-        const mongoOrderId = payment?.notes?.orderId;
-
-        let order = mongoOrderId
-          ? await orderModel.findById(mongoOrderId)
-          : await orderModel.findOne({ "payment.razorpayOrderId": razorpayOrderId });
-
-        if (order && order.payment.status !== "PAID") {
-          const paymentDetails = parseRazorpayPayment(payment);
-          await markOrderAsPaid(order, {
-            razorpayOrderId,
-            razorpayPaymentId,
-            ...paymentDetails,
-          });
-          console.log(`[RAZORPAY] Order ${order._id} marked as ORDERED/PAID via webhook`);
-        }
-      }
-
-      if (event === "payment.failed") {
-        const payment = eventBody.payload?.payment?.entity;
-        const mongoOrderId = payment?.notes?.orderId;
-        if (mongoOrderId) {
-          await orderModel.findByIdAndUpdate(mongoOrderId, {
-            "payment.status": "FAILED",
-          });
-        }
-      }
-
-      res.json({ received: true });
+      res.json({ received: true, ...result });
     } catch (err) {
       console.error("[RAZORPAY] Webhook error:", err.message);
       res.status(500).json({ message: "Webhook processing failed" });

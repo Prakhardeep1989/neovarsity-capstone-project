@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
@@ -437,7 +437,7 @@ const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     setLoading(true);
     try {
       const data = isAdmin
@@ -449,7 +449,7 @@ const Orders = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAdmin, user.token]);
 
   useEffect(() => {
     if (!user.email) {
@@ -457,7 +457,7 @@ const Orders = () => {
       return;
     }
     loadOrders();
-  }, [user.email, user.token, isAdmin]);
+  }, [user.email, loadOrders, navigate]);
 
   const handleStatusUpdate = async (orderId, status) => {
     const response = await updateOrderStatus(orderId, status, user.token);
