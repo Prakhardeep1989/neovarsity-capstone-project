@@ -19,7 +19,6 @@ const Login = () => {
     email: "",
     password: "",
   });
-  //   console.log(data);
 
   const handleShowPassword = () => {
     setShowPassword((preve) => !preve);
@@ -51,7 +50,6 @@ const Login = () => {
       );
 
       const dataRes = await fetchData.json();
-      //   console.log(dataRes);
 
       toast(dataRes.message);
 
@@ -61,8 +59,6 @@ const Login = () => {
           navigate("/");
         }, 1000);
       }
-
-      // console.log(userData); // data come from redux
     } else {
       alert("Please Enter required fields");
     }
@@ -125,4 +121,3 @@ const Login = () => {
 };
 
 export default Login;
-// 3.2.00

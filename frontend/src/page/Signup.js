@@ -20,7 +20,6 @@ const Signup = () => {
     confirmPassword: "",
     image: "",
   });
-  //   console.log(data);
 
   const handleShowPassword = () => {
     setShowPassword((preve) => !preve);
@@ -41,7 +40,6 @@ const Signup = () => {
 
   const handleUploadProfileImage = async (e) => {
     const data = await ImagetoBase64(e.target.files[0]);
-    // console.log(data);
 
     setData((preve) => {
       return {
@@ -69,7 +67,6 @@ const Signup = () => {
 
         const dataRes = await fetchData.json();
 
-        // alert(dataRes.message);
         toast(dataRes.message);
         if (dataRes.alert) {
           navigate("/login");
@@ -85,7 +82,6 @@ const Signup = () => {
   return (
     <PageLayout centered>
       <div className="w-full max-w-sm bg-white flex flex-col p-4 rounded-lg shadow">
-        {/* <h1 className="text-center text-2xl font-bold">Sign up</h1> */}
         <div className="w-20 h-20 overflow-hidden rounded-full drop-shadow-md shadow-md m-auto relative">
           <FoodImage
             src={data.image ? data.image : LOGIN_IMAGE}

@@ -13,9 +13,7 @@ const getFromAddress = () =>
 const isResendSandbox = () => getFromAddress().includes("@resend.dev");
 
 const getSandboxRecipient = () =>
-  process.env.RESEND_SANDBOX_EMAIL ||
-  process.env.CONTACT_EMAIL ||
-  "coolprakhar06@gmail.com";
+  process.env.RESEND_SANDBOX_EMAIL || process.env.CONTACT_EMAIL || null;
 
 const resolveRecipient = (intendedTo) => {
   if (!intendedTo) {
@@ -27,6 +25,10 @@ const resolveRecipient = (intendedTo) => {
   }
 
   const sandboxTo = getSandboxRecipient();
+  if (!sandboxTo) {
+    return { to: intendedTo, sandboxRedirect: false };
+  }
+
   if (intendedTo.toLowerCase() === sandboxTo.toLowerCase()) {
     return { to: sandboxTo, sandboxRedirect: false };
   }
@@ -214,7 +216,11 @@ const sendOrderReceiptEmail = async (order) => {
 };
 
 const sendContactEmail = async ({ name, email, message }) => {
-  const to = process.env.CONTACT_EMAIL || "coolprakhar06@gmail.com";
+  const to = process.env.CONTACT_EMAIL;
+  if (!to) {
+    console.log("[EMAIL] CONTACT_EMAIL not configured.");
+    return { sent: false, reason: "Contact email not configured" };
+  }
   const subject = `HOMELY Meals — Contact request from ${name}`;
   const safeName = escapeHtml(name);
   const safeEmail = escapeHtml(email);

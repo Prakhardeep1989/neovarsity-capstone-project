@@ -17,7 +17,23 @@ const razorpay = new Razorpay({
 });
 
 const app = express();
-app.use(cors());
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:3000",
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error("Not allowed by CORS"));
+    },
+  })
+);
 
 const paymentController = createPaymentController({ orderModel, razorpay });
 
@@ -38,7 +54,7 @@ const { validateProductInput } = require("./utils/productValidation");
 mongoose.set("strictQuery", false);
 mongoose
   .connect(process.env.MONGODB_URL)
-  .then(() => console.log("Connect to Databse"))
+  .then(() => console.log("Connected to database"))
   .catch((err) => console.log(err));
 
 const userSchema = mongoose.Schema({
@@ -210,20 +226,6 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.post("/uploadProduct", protectRoute, adminOnly, async (req, res) => {
-  res.status(410).send({
-    message: "This endpoint is deprecated. Use POST /api/products/admin",
-    alert: false,
-  });
-});
-
-app.get("/product", async (req, res) => {
-  const user = await getOptionalUser(req);
-  const filter = isAdminUser(user) ? {} : { status: "AVAILABLE" };
-  const data = await productModel.find(filter).sort({ createdAt: -1 });
-  res.json(data);
-});
-
 app.get("/api/products", async (req, res) => {
   try {
     const user = await getOptionalUser(req);
@@ -316,27 +318,6 @@ app.delete("/api/products/admin/:id", protectRoute, adminOnly, async (req, res) 
   } catch (err) {
     res.status(500).json({ message: "Failed to delete product", alert: false });
   }
-});
-
-app.post("/save-order", async (req, res) => {
-  res.status(410).send({
-    message: "Deprecated. Use POST /api/orders/create-payment-order",
-    alert: false,
-  });
-});
-
-app.get("/orders/:email", async (req, res) => {
-  res.status(410).send({
-    message: "Deprecated. Use GET /api/orders/my-orders",
-    alert: false,
-  });
-});
-
-app.post("/create-checkout-session", async (req, res) => {
-  res.status(410).send({
-    message: "Deprecated. Use POST /api/orders/create-payment-order",
-    alert: false,
-  });
 });
 
 app.listen(PORT, () => console.log("Server is running at port: " + PORT));

@@ -25,7 +25,98 @@ A full-stack MERN restaurant ordering application for **HOMELY Meals**, a cloud 
 | Database | MongoDB |
 | Payments | Razorpay |
 | Email | Resend |
-| Hosting | Vercel (FE), Render (BE) |
+| Hosting | Vercel (frontend), Render (backend) |
+
+## Deployment (Vercel + Render)
+
+Deploy the **backend first**, then the frontend, so you have the Render API URL for Vercel env vars.
+
+### 1. MongoDB Atlas
+
+1. Create a free cluster at [mongodb.com/atlas](https://www.mongodb.com/atlas).
+2. Add a database user and allow network access (`0.0.0.0/0` for Render).
+3. Copy the connection string into `MONGODB_URL`.
+
+### 2. Backend on Render
+
+**Option A — Blueprint (recommended):** Connect this repo on [Render](https://render.com) and use the root `render.yaml`. It creates a web service with `rootDir: backend`.
+
+**Option B — Manual web service:**
+
+| Setting | Value |
+|---------|--------|
+| Root Directory | `backend` |
+| Build Command | `npm install` |
+| Start Command | `npm start` |
+| Health Check Path | `/` |
+
+**Environment variables** (Render dashboard → Environment):
+
+```env
+PORT=8080
+NODE_ENV=production
+MONGODB_URL=mongodb+srv://...
+JWT_SECRET=<long-random-string>
+RAZORPAY_KEY_ID=rzp_live_...
+RAZORPAY_KEY_SECRET=...
+RAZORPAY_WEBHOOK_SECRET=<random-secret>
+WEBHOOK_URL=https://YOUR-SERVICE.onrender.com/api/payments/razorpay/webhook
+FRONTEND_URL=https://YOUR-APP.vercel.app
+RESEND_API_KEY=re_...
+FROM_EMAIL=HOMELY Meals <orders@yourdomain.com>
+CONTACT_EMAIL=your-email@example.com
+```
+
+After deploy, note your Render URL (e.g. `https://homely-meals-api.onrender.com`).
+
+**Razorpay webhook (production):** Set `WEBHOOK_URL` to your Render URL, then run locally once with live keys:
+
+```bash
+cd backend
+npm run setup:webhook
+```
+
+Or add the webhook manually in [Razorpay Dashboard → Webhooks](https://dashboard.razorpay.com/app/webhooks).
+
+**MongoDB Atlas:** In Network Access, allow `0.0.0.0/0` or Render’s outbound IPs if you restrict access.
+
+### 3. Frontend on Vercel
+
+1. Import the repo at [vercel.com](https://vercel.com).
+2. Set **Root Directory** to `frontend`.
+3. Framework preset: **Create React App** (build: `npm run build`, output: `build`).
+4. `frontend/vercel.json` is included for React Router SPA rewrites.
+
+**Environment variables** (Vercel → Settings → Environment Variables):
+
+```env
+REACT_APP_SERVER_DOMIN=https://YOUR-SERVICE.onrender.com
+REACT_APP_RAZORPAY_KEY_ID=rzp_live_...
+```
+
+Redeploy after changing env vars (CRA bakes them in at build time).
+
+### 4. Post-deploy checklist
+
+- [ ] Backend health: `GET https://YOUR-SERVICE.onrender.com/` returns `HOMELY Meals API is running`
+- [ ] Frontend loads menu and login works (CORS: `FRONTEND_URL` must match your Vercel URL exactly)
+- [ ] Test checkout with Razorpay **live** keys on production
+- [ ] Webhook logs show `200` in Razorpay Dashboard
+- [ ] Resend: verify your domain and set production `FROM_EMAIL`
+- [ ] Promote an admin user in MongoDB (see [Admin Setup](#admin-setup))
+
+### Environment variable matrix
+
+| Variable | Where | Purpose |
+|----------|-------|---------|
+| `REACT_APP_SERVER_DOMIN` | Vercel | Backend API base URL |
+| `REACT_APP_RAZORPAY_KEY_ID` | Vercel | Razorpay Checkout public key |
+| `MONGODB_URL` | Render | MongoDB connection |
+| `JWT_SECRET` | Render | JWT signing |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Render | Payment API |
+| `RAZORPAY_WEBHOOK_SECRET` / `WEBHOOK_URL` | Render | Webhook backup path |
+| `FRONTEND_URL` | Render | CORS allowed origin (your Vercel URL) |
+| `RESEND_API_KEY` / `FROM_EMAIL` / `CONTACT_EMAIL` | Render | Order receipts & contact form |
 
 ## Local Setup
 
@@ -54,6 +145,7 @@ See `backend/.env.example` for comments on each variable. Minimum required:
 
 ```env
 PORT=8080
+FRONTEND_URL=http://localhost:3000
 MONGODB_URL=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key_here
 RAZORPAY_KEY_ID=rzp_test_...
@@ -320,4 +412,4 @@ Log out and log back in to refresh the JWT.
 - **Webhook setup:** set `WEBHOOK_URL`, `RAZORPAY_WEBHOOK_SECRET`, and run `npm run setup:webhook` from `backend/` (see [Razorpay Webhook Setup](#razorpay-webhook-setup)). For local dev, keep ngrok running on port 8080.
 - Backend calculates order totals from MongoDB product prices (frontend prices are not trusted).
 - Use Razorpay **test mode** keys (`rzp_test_...`) during development.
-- Resend sandbox: with `homely_meals@resend.dev`, emails can only be delivered to your Resend account email. Set `RESEND_SANDBOX_EMAIL=coolprakhar06@gmail.com` — order receipts to other customers are automatically redirected there in dev (with a notice in the email body). For production, verify a domain at [resend.com/domains](https://resend.com/domains) and update `FROM_EMAIL`.
+- Resend sandbox: with `homely_meals@resend.dev`, emails can only be delivered to addresses allowed by Resend. Set `RESEND_SANDBOX_EMAIL` to your Resend account email so order receipts to other customers are redirected in dev (with a notice in the email body). For production, verify a domain at [resend.com/domains](https://resend.com/domains) and update `FROM_EMAIL`.

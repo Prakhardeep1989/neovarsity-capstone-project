@@ -131,7 +131,7 @@ const Cart = () => {
         },
         theme: { color: "#dc2626" },
         modal: {
-          ondismiss: () => toast("Payment cancelled"),
+          ondismiss: () => navigate("/cancel"),
         },
       };
 
