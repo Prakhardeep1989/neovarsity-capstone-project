@@ -27,7 +27,149 @@ A full-stack MERN restaurant ordering application for **HOMELY Meals**, a cloud 
 | Email | Resend |
 | Hosting | Vercel (frontend), Render (backend) |
 
-## Deployment (Vercel + Render)
+## Environments
+
+| Environment | Frontend env file | Backend env file | Database | Razorpay | Resend |
+|-------------|-------------------|------------------|----------|----------|--------|
+| **Local** | `frontend/.env` | `backend/.env` | e.g. `homely-dev` | Test (`rzp_test_...`) | Sandbox |
+| **Stage** | `frontend/.env.stage` | `backend/.env.stage` | e.g. `homely-stage` (same M0 cluster) | Same test keys as local | Same as local |
+| **Production** | Vercel dashboard | Render dashboard | Separate DB | Live keys | Verified domain |
+
+Templates (safe to commit): `.env.example`, `.env.stage.example`  
+Secrets (gitignored): `.env`, `.env.stage`
+
+### Create stage env files on your machine
+
+```bash
+# Backend
+cd backend
+copy .env.stage.example .env.stage    # Windows
+# cp .env.stage.example .env.stage    # Mac/Linux
+
+# Frontend
+cd frontend
+copy .env.stage.example .env.stage
+```
+
+Fill `backend/.env.stage`:
+
+1. Copy `RAZORPAY_*`, `RESEND_*`, `FROM_EMAIL`, `CONTACT_EMAIL`, `RESEND_SANDBOX_EMAIL` from `backend/.env` (unchanged).
+2. Set `MONGODB_URL` to the **same Atlas cluster** but a **different database name**, e.g. `.../homely-stage?retryWrites=true&w=majority`.
+3. Leave `FRONTEND_URL` and `WEBHOOK_URL` as placeholders until after deploy.
+
+Fill `frontend/.env.stage`:
+
+1. Copy `REACT_APP_RAZORPAY_KEY_ID` from `frontend/.env`.
+2. Set `REACT_APP_SERVER_DOMIN` after Render deploy.
+
+Paste the same values into **Render** and **Vercel** dashboards (they do not read `.env.stage` files from the repo).
+
+## Stage Deployment (Vercel + Render — free tier)
+
+Test-mode Razorpay and Resend sandbox, separate Atlas DB, same keys as local. Deploy **backend first**, then frontend.
+
+### 1. MongoDB Atlas — stage database
+
+On your existing **M0 cluster** (same as local):
+
+1. No new cluster needed — only a **new database name** in the connection string.
+2. Local might use `.../homely-dev?...` → stage uses `.../homely-stage?...`
+3. Network Access must allow `0.0.0.0/0` (Render free tier).
+4. Put the stage connection string in `backend/.env.stage` → `MONGODB_URL`.
+
+Atlas creates the database on first write (first API request after deploy).
+
+### 2. Backend on Render (free tier)
+
+**Option A — Blueprint:** Render → **New** → **Blueprint** → connect repo → use `render.stage.yaml`  
+Creates service **`homely-meals-api-stage`** (`plan: free`, `rootDir: backend`).
+
+**Option B — Manual:**
+
+| Setting | Value |
+|---------|--------|
+| Name | `homely-meals-api-stage` |
+| Plan | **Free** |
+| Root Directory | `backend` |
+| Build Command | `npm install` |
+| Start Command | `npm start` |
+| Health Check Path | `/` |
+
+**Environment variables** — copy from `backend/.env.stage` into Render → Environment:
+
+```env
+NODE_ENV=production
+PORT=8080
+MONGODB_URL=mongodb+srv://...@cluster0.xxxxx.mongodb.net/homely-stage?retryWrites=true&w=majority
+JWT_SECRET=<from .env.stage>
+FRONTEND_URL=https://your-app-stage.vercel.app
+RATE_LIMIT_MAX=200
+RAZORPAY_KEY_ID=rzp_test_...
+RAZORPAY_KEY_SECRET=<same as local>
+RAZORPAY_WEBHOOK_SECRET=<random secret>
+WEBHOOK_URL=https://homely-meals-api-stage.onrender.com/api/payments/razorpay/webhook
+RESEND_API_KEY=<same as local>
+FROM_EMAIL=HOMELY Meals <homely_meals@resend.dev>
+CONTACT_EMAIL=<same as local>
+RESEND_SANDBOX_EMAIL=<same as local>
+```
+
+After deploy, verify: `GET https://homely-meals-api-stage.onrender.com/` → `HOMELY Meals API is running`
+
+**Free tier note:** Service sleeps after ~15 min idle; first request may take 30–60s (cold start).
+
+### 3. Frontend on Vercel (free tier)
+
+1. [vercel.com/new](https://vercel.com/new) → import repo.
+2. **Root Directory:** `frontend`
+3. **Framework:** Create React App | **Build:** `npm run build` | **Output:** `build`
+4. **Plan:** Hobby (free)
+
+**Environment variables** — copy from `frontend/.env.stage` (Environment: **Production**):
+
+```env
+REACT_APP_SERVER_DOMIN=https://homely-meals-api-stage.onrender.com
+REACT_APP_RAZORPAY_KEY_ID=rzp_test_...
+```
+
+Deploy, then copy your Vercel URL (e.g. `https://neovarsity-capstone-project.vercel.app`).
+
+### 4. Link frontend ↔ backend (CORS)
+
+1. Set `FRONTEND_URL` in `backend/.env.stage` to your **exact** Vercel URL (no trailing `/`).
+2. Paste the same value into **Render** → Environment.
+3. **Redeploy** Render backend.
+
+### 5. Razorpay webhook (test mode)
+
+From `backend/` with `backend/.env.stage` filled:
+
+```bash
+npm run setup:webhook:stage
+```
+
+Or manually in [Razorpay Dashboard → Webhooks (Test Mode)](https://dashboard.razorpay.com/app/webhooks):
+
+- URL: `https://homely-meals-api-stage.onrender.com/api/payments/razorpay/webhook`
+- Secret: same as `RAZORPAY_WEBHOOK_SECRET` on Render
+- Events: `payment.captured`, `payment.failed`, `order.paid`
+
+### 6. Stage checklist
+
+- [ ] `backend/.env.stage` and `frontend/.env.stage` exist locally (gitignored)
+- [ ] Stage DB name differs from local (e.g. `homely-stage` vs `homely-dev`)
+- [ ] Render env matches `backend/.env.stage`
+- [ ] Vercel env matches `frontend/.env.stage`
+- [ ] `FRONTEND_URL` on Render = Vercel URL exactly
+- [ ] Menu, login, checkout work with `success@razorpay`
+- [ ] Webhook logs show `200` in Razorpay (Test Mode)
+- [ ] Promote admin in **stage** DB only (see [Admin Setup](#admin-setup))
+
+---
+
+## Production Deployment (later)
+
+When going live, use **live** Razorpay keys, a **verified Resend domain**, and a separate production DB. Use `render.yaml` (service `homely-meals-api`) and production env vars — do not reuse `.env.stage` for production.
 
 Deploy the **backend first**, then the frontend, so you have the Render API URL for Vercel env vars.
 

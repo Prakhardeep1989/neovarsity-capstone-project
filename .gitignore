@@ -3,7 +3,13 @@
 /frontend/node_modules
 /.pnp
 .pnp.js
+
+# Environment secrets (local + stage — never commit)
 .env
+**/.env
+**/.env.stage
+!**/.env.example
+!**/.env.stage.example
 
 # testing
 /coverage
