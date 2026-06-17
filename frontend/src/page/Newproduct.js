@@ -1,9 +1,16 @@
 import React, { useState } from "react";
 import { toast } from "react-hot-toast";
 import { BsCloudUpload } from "react-icons/bs";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { ImagetoBase64 } from "../utility/ImagetoBase64";
 
 const Newproduct = () => {
+  const userData = useSelector((state) => state.user);
+  const navigate = useNavigate();
+  const isLoggedIn = Boolean(userData.email);
+  const isAdmin = Boolean(userData.isAdmin);
+
   const [data, setData] = useState({
     name: "",
     category: "",
@@ -37,7 +44,11 @@ const Newproduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // console.log(data);
+
+    if (!isLoggedIn || !isAdmin) {
+      toast("Unauthorized: admin access required");
+      return;
+    }
 
     const { name, image, category, price } = data;
 
@@ -48,6 +59,7 @@ const Newproduct = () => {
           method: "POST",
           headers: {
             "content-type": "application/json",
+            "x-admin-email": userData.email,
           },
           body: JSON.stringify(data),
         }
@@ -71,6 +83,39 @@ const Newproduct = () => {
       toast("Enter required Fields");
     }
   };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-slate-600 text-lg mb-4">
+          Please log in to access this page.
+        </p>
+        <button
+          onClick={() => navigate("/login")}
+          className="bg-red-500 text-white px-4 py-2 rounded"
+        >
+          Go to Login
+        </button>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-slate-600 text-lg mb-4">
+          You do not have permission to add products.
+        </p>
+        <button
+          onClick={() => navigate("/")}
+          className="bg-red-500 text-white px-4 py-2 rounded"
+        >
+          Go Home
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4">
       <form

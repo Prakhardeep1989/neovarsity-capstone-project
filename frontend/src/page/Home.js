@@ -1,14 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef } from "react";
 import { useSelector } from "react-redux";
 import CardFeature from "../component/CardFeature";
 import HomeCard from "../component/HomeCard";
 import { GrPrevious, GrNext } from "react-icons/gr";
-import FilterProduct from "../component/FilterProduct";
 import AllProduct from "../component/AllProduct";
 
 const Home = () => {
   const productData = useSelector((state) => state.product.productList);
-  const homeProductCartList = productData.slice(20, 25);
+  const homeProductCartList = productData.slice(0, 4);
   const homeProductCartListVegetables = productData.filter(
     (el) => el.category === "vegetable",
     []
@@ -32,6 +31,7 @@ const Home = () => {
             <p className="text-sm font-medium text-slate-900">Bike Delivery</p>
             <img
               src="https://cdn-icons-png.flaticon.com/512/2972/2972185.png"
+              alt="Delivery"
               className="h-7"
             />
           </div>
@@ -45,7 +45,14 @@ const Home = () => {
             product descriptions, and secure payment options, we aim to make
             your ordering process hassle-free and enjoyable.
           </p>
-          <button className="font-bold bg-red-500 text-slate-200 px-4 py-2 rounded-md">
+          <button
+            onClick={() =>
+              document
+                .getElementById("menu-section")
+                ?.scrollIntoView({ behavior: "smooth" })
+            }
+            className="font-bold bg-red-500 hover:bg-red-600 text-slate-200 px-4 py-2 rounded-md"
+          >
             Order Now
           </button>
         </div>
@@ -115,7 +122,9 @@ const Home = () => {
         </div>
       </div>
 
-      <AllProduct heading={"Your Product"} />
+      <div id="menu-section">
+        <AllProduct heading={"Your Product"} />
+      </div>
     </div>
   );
 };

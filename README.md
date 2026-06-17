@@ -1,36 +1,109 @@
-# HOMELY Meals - A cloud kitchen
+# HOMELY Meals - A Cloud Kitchen
 
-# Features
-✔️ Only Admin add the product  <br />
-✔️ Filtering product <br />
-✔️ Authentication login <br />
-✔️ Sign up, user upload profile picture <br />
-✔️ Add to  Cart Items <br />
-✔️ Cart Items Insrease and decrease <br />
-✔️ Authentication user only Buy Item <br />
-✔️ Payment method Stripe  <br />
-✔️ Error hendeling 404 page  <br />
-✔️ Responsive Design using Tailwind <br />
-✔️ State management Redux toolkit <br />
-✔️ Deploy the App LIVE on vercel(FE) and render (BE) <br />
+A full-stack MERN restaurant ordering application for **HOMELY Meals**, a cloud kitchen in Chandausi, UP serving fresh homely food with online ordering and Stripe payments.
 
-# Technologies used
-✔️ Frontend : - [React.js](https://legacy.reactjs.org/docs/getting-started.html "click to open") <br />
-✔️ Style :- [Tailwind   ]( https://tailwindui.com/documentation "click to open") <br />
-✔️ Backend :-  [Node.js and Express.js  ](https://expressjs.com "click to open") <br />
-✔️ DataBase :- [mongoDb ]( https://www.mongodb.com/docs/ "click to open") <br />
-✔️ State management :- [Redux toolkit ](https://redux-toolkit.js.org/ "click to open") <br />
-✔️ Routing :- [react-router-dom ](https://reactrouter.com/en/main "click to open") <br />
-✔️ Payment :- [Stripe ](https://dashboard.stripe.com/test/dashboard "click to open") <br />
-✔️ Frontend Hosting :- [vercel ](https://vercel.com "click to open") <br />
-✔️ Back end Hosting :- [render ](https://render.com/ "click to open") <br />
-✔️ Package manager :- [npm ](https://www.npmjs.com/ "click to open") <br />
+## Features
 
-# Description :
-- The project is a MERN (MongoDB, Express.js, React.js, Node.js) restaurant application with various features. Here is a description of the project
-- The application allows the admin to add products to the restaurant menu. Users can then view and filter the available products. To access the application, users need to authenticate by loging in or signing up. During the sign-up process, users can upload a profile picture.
-- Once logged in, users can add items to their cart. The cart allows users to increase or decrease the quantity of items. Only authenticated users are allowed to proceed with the purchase of items.
-- For payment processing, the Stripe payment method is implemented in the application. This enables secure and convenient online transactions.
-- To enhance user experience, the application includes error handling with a 404 page for handling missing pages or routes. The design of the application is responsive, ensuring compatibility across different devices and screen sizes. Tailwind CSS is used for styling the user interface.
-- State management in the application is implemented using Redux Toolkit, which provides a predictable state container for managing the application's data.
-- The application is deployed live on Vercel for the frontend hosting, while the backend is hosted on Render. This allows the application to be accessible to users on the internet.
+- Admin-only product management (backend-protected)
+- Product browsing and category filtering
+- User authentication with bcrypt password hashing
+- Sign up with profile picture upload
+- Shopping cart with quantity controls
+- Authenticated checkout via Stripe
+- Order history saved to MongoDB
+- Session persistence across page refreshes
+- 404 error page
+- Responsive design with Tailwind CSS
+- Redux Toolkit state management
+- Deployed on Vercel (frontend) and Render (backend)
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React.js, Tailwind CSS, Redux Toolkit |
+| Backend | Node.js, Express.js |
+| Database | MongoDB |
+| Payments | Stripe |
+| Hosting | Vercel (FE), Render (BE) |
+
+## Local Setup
+
+### Prerequisites
+
+- Node.js 18+
+- MongoDB Atlas account (or local MongoDB)
+- Stripe test account
+
+### Backend
+
+```bash
+cd backend
+npm install
+```
+
+Create `backend/.env`:
+
+```env
+PORT=8080
+MONGODB_URL=your_mongodb_connection_string
+STRIPE_SECRET_KEY=your_stripe_secret_key
+FRONTEND_URL=http://localhost:3000
+ADMIN_EMAIL=your_admin_email@example.com
+```
+
+Start the server:
+
+```bash
+npm run dev
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+```
+
+Create `frontend/.env`:
+
+```env
+REACT_APP_SERVER_DOMIN=http://localhost:8080
+REACT_APP_STRIPE_PUBLIC_KEY=your_stripe_publishable_key
+REACT_APP_ADMIN_EMAIL=your_admin_email@example.com
+```
+
+Start the app:
+
+```bash
+npm start
+```
+
+> **Note:** `REACT_APP_ADMIN_EMAIL` and `ADMIN_EMAIL` must match. Only this email can add new products.
+
+## API Endpoints
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| POST | `/signup` | Register a new user |
+| POST | `/login` | Authenticate user |
+| GET | `/product` | Get all products |
+| POST | `/uploadProduct` | Add product (admin only) |
+| POST | `/create-checkout-session` | Stripe checkout |
+| POST | `/save-order` | Save order after payment |
+| GET | `/orders/:email` | Get user order history |
+
+## Demo Flow
+
+1. Browse products on the home page
+2. Filter by category (vegetable, dosa, rice, etc.)
+3. Add items to cart
+4. Sign up / log in
+5. Proceed to Stripe test payment
+6. Order confirmation on success page
+
+## Important Notes
+
+- Existing users registered before bcrypt was added will need to sign up again.
+- Use Stripe test card `4242 4242 4242 4242` for payments.
+- Set the same admin email in both frontend and backend `.env` files.

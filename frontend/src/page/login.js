@@ -1,5 +1,5 @@
 import { useState } from "react";
-import loginSignupImage from "../assest/login-animation.gif";
+import { LOGIN_IMAGE } from "../utility/productImages";
 import { BiShow, BiHide } from "react-icons/bi";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
@@ -73,7 +73,7 @@ const Login = () => {
     <div className="p-3 md:p-4">
       <div className="w-full max-w-sm bg-white m-auto flex  flex-col p-4">
         <div className="w-20 h-20 overflow-hidden rounded-full drop-shadow-md shadow-md m-auto relative">
-          <img src={loginSignupImage} alt="img" className="w-full h-full" />
+          <img src={LOGIN_IMAGE} alt="Login" className="w-full h-full object-cover" />
         </div>
         <form className="w-full py-3 flex flex-col" onSubmit={handleSubmit}>
           <label htmlFor="email">Email</label>

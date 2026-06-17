@@ -1,12 +1,12 @@
 import React from "react";
-import Err404 from "../assest/404.png";
+import { ERROR_404_IMAGE } from "../utility/productImages";
 import { Link } from "react-router-dom";
 const ErragePage = () => {
   return (
     <>
       <div className="p-3 container max-w-screen-lg mx-auto pb-12  flex justify-center ">
         <img
-          src={Err404}
+          src={ERROR_404_IMAGE}
           alt="404"
           className="max-w-xl rounded-lg shadow-xl dark:shadow-gray-800"
         />

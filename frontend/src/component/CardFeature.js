@@ -1,10 +1,13 @@
 import React from "react";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
-import { addCartItem, increaseQty } from "../redux/productSlide";
+import { addCartItem } from "../redux/productSlide";
+
+import { getProductImage } from "../utility/productImages";
 
 const CardFeature = ({ image, name, price, category, loading, id }) => {
   const dispatch = useDispatch();
+  const imageSrc = getProductImage(image, category);
 
   const handleAddCartProduct = (e) => {
     dispatch(
@@ -20,14 +23,21 @@ const CardFeature = ({ image, name, price, category, loading, id }) => {
 
   return (
     <div className="w-full min-w-[200px] max-w-[200px] bg-white hover:shadow-lg drop-shadow-lg py-5 px-4 cursor-pointer flex flex-col ">
-      {image ? (
+      {name ? (
         <>
           <Link
             to={`/menu/${id}`}
             onClick={() => window.scrollTo({ top: "0", behavior: "smooth" })}
           >
             <div className="h-28 flex flex-col justify-center items-center">
-              <img src={image} className="h-full" />
+              <img
+                src={imageSrc}
+                alt={name}
+                className="h-full object-cover"
+                onError={(e) => {
+                  e.target.src = getProductImage("", category);
+                }}
+              />
             </div>
             <h3 className="font-semibold text-slate-600  capitalize text-lg mt-4 whitespace-nowrap overflow-hidden">
               {name}

@@ -8,13 +8,23 @@ import {
   decreaseQty,
 } from "../redux/productSlide";
 
+import { getProductImage } from "../utility/productImages";
+
 const CartProduct = ({ id, name, image, category, qty, total, price }) => {
   const dispatch = useDispatch();
+  const imageSrc = getProductImage(image, category);
 
   return (
     <div className="bg-slate-200 p-2 flex gap-4 rounded border border-slate-300">
       <div className="p-3 bg-white rounded overflow-hidden">
-        <img src={image} className="h-28 w-40 object-cover " />
+        <img
+          src={imageSrc}
+          alt={name}
+          className="h-28 w-40 object-cover"
+          onError={(e) => {
+            e.target.src = getProductImage("", category);
+          }}
+        />
       </div>
       <div className="flex flex-col gap-1 w-full">
         <div className="flex justify-between">

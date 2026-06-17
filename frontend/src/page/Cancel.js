@@ -1,9 +1,24 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Cancel = () => {
   return (
-    <div className="bg-red-200 w-full max-w-md m-auto h-36 flex justify-center items-center font-semibold text-lg">
-      <p>Payment is Cancel</p>
+    <div className="p-4 md:p-8 max-w-lg mx-auto text-center">
+      <div className="bg-red-100 border border-red-300 rounded-lg p-8 shadow">
+        <p className="text-5xl mb-4">✕</p>
+        <h1 className="text-2xl font-bold text-red-800 mb-2">
+          Payment Cancelled
+        </h1>
+        <p className="text-slate-600 mb-6">
+          Your payment was not completed. Your cart items are still saved.
+        </p>
+        <Link
+          to="/cart"
+          className="inline-block bg-red-500 hover:bg-red-600 text-white font-medium px-6 py-2 rounded-full"
+        >
+          Return to Cart
+        </Link>
+      </div>
     </div>
   );
 };
