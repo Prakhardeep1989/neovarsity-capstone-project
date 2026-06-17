@@ -97,12 +97,37 @@ const schemaProduct = mongoose.Schema(
 );
 const productModel = mongoose.model("product", schemaProduct);
 
+const toProductDoc = ({ legacyNames, ...product }) => product;
+
 const seedMenuIfEmpty = async () => {
   const count = await productModel.countDocuments();
   if (count === 0) {
-    await productModel.insertMany(seedProducts);
+    await productModel.insertMany(seedProducts.map(toProductDoc));
     console.log(`Seeded ${seedProducts.length} sample menu items`);
+    return;
   }
+
+  let synced = 0;
+  for (const item of seedProducts) {
+    const { legacyNames = [], ...productData } = item;
+    const existing = await productModel.findOne({
+      name: { $in: [productData.name, ...legacyNames] },
+    });
+    if (existing) {
+      await productModel.updateOne(
+        { _id: existing._id },
+        {
+          $set: {
+            name: productData.name,
+            description: productData.description,
+            image: productData.image,
+          },
+        }
+      );
+      synced += 1;
+    }
+  }
+  if (synced) console.log(`Synced ${synced} menu items from seed catalog`);
 };
 
 seedMenuIfEmpty().catch((err) => console.log("Seed error:", err));

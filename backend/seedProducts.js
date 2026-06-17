@@ -1,56 +1,73 @@
+const optimize = (photoId, width = 520, height = 390) =>
+  `https://images.unsplash.com/${photoId}?w=${width}&h=${height}&fit=crop&q=82&auto=format`;
+
 const seedProducts = [
   {
-    name: "Standard Thali",
-    description: "Dal, sabzi, rice, roti, salad, and pickle — a complete homely meal.",
-    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&auto=format&fit=crop",
+    legacyNames: ["Standard Thali"],
+    name: "Homestyle Daily Thali",
+    description:
+      "A balanced everyday plate — creamy dal, seasonal sabzi, steamed rice, soft roti, fresh salad, and tangy achaar. Wholesome, familiar, and made to feel like home.",
+    image: optimize("photo-1742281257687-092746ad6021"),
     price: 120,
     status: "AVAILABLE",
     category: "THALI",
   },
   {
-    name: "Deluxe Thali",
-    description: "Premium thali with paneer sabzi, jeera rice, butter roti, raita, and dessert.",
-    image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&auto=format&fit=crop",
+    legacyNames: ["Deluxe Thali"],
+    name: "Premium Signature Thali",
+    description:
+      "Our chef's elevated thali: rich paneer curry, fragrant jeera rice, butter-brushed roti, cooling raita, and a sweet finish. Comfort food with a touch of indulgence.",
+    image: optimize("photo-1585937421612-70a008356fbe"),
     price: 180,
     status: "AVAILABLE",
     category: "THALI",
   },
   {
-    name: "Rajma Rice Combo",
-    description: "Slow-cooked rajma with steamed rice and onion salad.",
-    image: "https://images.unsplash.com/photo-1516684669130-aa58539042e5?w=400&auto=format&fit=crop",
+    legacyNames: ["Rajma Rice Combo"],
+    name: "Classic Rajma & Rice",
+    description:
+      "Slow-simmered kidney beans in a spiced tomato-onion gravy, served with fluffy steamed rice and a crisp onion salad. A North Indian staple, done the homely way.",
+    image: optimize("photo-1606471191009-63994c53433b"),
     price: 99,
     status: "AVAILABLE",
     category: "COMBO_MEAL",
   },
   {
-    name: "Chole Rice Combo",
-    description: "Spiced chickpea curry served with fragrant basmati rice.",
-    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&auto=format&fit=crop",
+    legacyNames: ["Chole Rice Combo"],
+    name: "Punjabi Chole & Rice",
+    description:
+      "Hearty Punjabi chickpea curry with warm aromatic spices, paired with fragrant basmati rice. Bold, satisfying, and perfect for a filling lunch.",
+    image: optimize("photo-1563379091339-03b21ab4a4f8"),
     price: 99,
     status: "AVAILABLE",
     category: "COMBO_MEAL",
   },
   {
-    name: "Extra Roti",
-    description: "Fresh whole wheat roti prepared on order.",
-    image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400&auto=format&fit=crop",
+    legacyNames: ["Extra Roti"],
+    name: "Fresh Whole Wheat Roti",
+    description:
+      "Soft, hot whole wheat flatbread rolled fresh to order. The perfect add-on to round out any meal.",
+    image: optimize("photo-1565557623262-b51c2513a641"),
     price: 15,
     status: "AVAILABLE",
     category: "ADD_ON",
   },
   {
-    name: "Garden Salad",
-    description: "Crisp cucumber, tomato, onion, and lemon dressing.",
-    image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&auto=format&fit=crop",
+    legacyNames: ["Garden Salad"],
+    name: "Kachumber Garden Salad",
+    description:
+      "Bright kachumber-style salad — cucumber, tomato, and onion tossed with lemon and a light chaat masala lift. Fresh, crunchy, and refreshing.",
+    image: optimize("photo-1540420773420-3366772f4999"),
     price: 40,
     status: "AVAILABLE",
     category: "ADD_ON",
   },
   {
-    name: "Boondi Raita",
-    description: "Cool yogurt raita with boondi and roasted cumin.",
-    image: "https://images.unsplash.com/photo-1631452181589-215fdab553a8?w=400&auto=format&fit=crop",
+    legacyNames: ["Boondi Raita"],
+    name: "Chilled Boondi Raita",
+    description:
+      "Smooth yogurt whisked with crispy boondi and roasted cumin. A cooling side that balances spice and heat.",
+    image: optimize("photo-1517244683847-7456b63c5969"),
     price: 35,
     status: "AVAILABLE",
     category: "ADD_ON",
