@@ -1,32 +1,44 @@
 const express = require("express");
 const createOrderController = require("../controllers/orderController");
+const createPaymentController = require("../controllers/paymentController");
 
 const createOrderRoutes = ({
   orderModel,
   productModel,
-  stripe,
+  razorpay,
   protectRoute,
   adminOnly,
   customerOnly,
 }) => {
   const router = express.Router();
-  const controller = createOrderController({ orderModel, productModel, stripe });
+  const orderController = createOrderController({
+    orderModel,
+    productModel,
+    razorpay,
+  });
+  const paymentController = createPaymentController({ orderModel });
 
   router.post(
-    "/create-checkout-session",
+    "/create-payment-order",
     protectRoute,
     customerOnly,
-    controller.createCheckoutSession
+    orderController.createPaymentOrder
   );
-  router.get("/my-orders", protectRoute, customerOnly, controller.getMyOrders);
-  router.get("/admin/all", protectRoute, adminOnly, controller.getAllOrders);
+  router.post(
+    "/verify-payment",
+    protectRoute,
+    customerOnly,
+    paymentController.verifyPayment
+  );
+  router.get("/my-orders", protectRoute, customerOnly, orderController.getMyOrders);
+  router.get("/admin/all", protectRoute, adminOnly, orderController.getAllOrders);
   router.put(
     "/admin/:id/status",
     protectRoute,
     adminOnly,
-    controller.updateOrderStatus
+    orderController.updateOrderStatus
   );
-  router.get("/:id", protectRoute, controller.getOrderById);
+  router.get("/:id", protectRoute, orderController.getOrderById);
 
   return router;
 };

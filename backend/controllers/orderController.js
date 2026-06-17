@@ -5,10 +5,7 @@ const {
   validateAdminStatusUpdate,
 } = require("../utils/orderValidation");
 
-const createOrderController = ({ orderModel, productModel, stripe }) => {
-  const clientUrl =
-    process.env.CLIENT_URL || process.env.FRONTEND_URL || "http://localhost:3000";
-
+const createOrderController = ({ orderModel, productModel, razorpay }) => {
   const buildOrderItems = async (cartItems) => {
     const orderItems = [];
     let totalAmount = 0;
@@ -39,7 +36,7 @@ const createOrderController = ({ orderModel, productModel, stripe }) => {
     return { orderItems, totalAmount };
   };
 
-  const createCheckoutSession = async (req, res) => {
+  const createPaymentOrder = async (req, res) => {
     try {
       const { items, deliveryDetails } = req.body;
 
@@ -57,6 +54,7 @@ const createOrderController = ({ orderModel, productModel, stripe }) => {
       }
 
       const { orderItems, totalAmount } = await buildOrderItems(sanitized);
+      const amountInPaise = Math.round(totalAmount * 100);
 
       const order = await orderModel.create({
         user: req.user._id,
@@ -81,44 +79,41 @@ const createOrderController = ({ orderModel, productModel, stripe }) => {
         totalAmount,
         status: "DRAFT",
         payment: {
-          provider: "STRIPE",
+          provider: "RAZORPAY",
           status: "PENDING",
           amount: totalAmount,
-          currency: "inr",
+          currency: "INR",
         },
       });
 
-      const session = await stripe.checkout.sessions.create({
-        mode: "payment",
-        payment_method_types: ["card"],
-        line_items: orderItems.map((item) => ({
-          price_data: {
-            currency: "inr",
-            product_data: { name: item.name },
-            unit_amount: Math.round(item.price * 100),
-          },
-          quantity: item.quantity,
-        })),
-        metadata: {
+      const razorpayOrder = await razorpay.orders.create({
+        amount: amountInPaise,
+        currency: "INR",
+        receipt: order._id.toString(),
+        notes: {
           orderId: order._id.toString(),
           userId: req.user._id.toString(),
         },
-        success_url: `${clientUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${clientUrl}/cart`,
       });
 
-      order.payment.stripeSessionId = session.id;
+      order.payment.razorpayOrderId = razorpayOrder.id;
       await order.save();
 
       res.json({
-        message: "Checkout session created",
+        message: "Payment order created",
         alert: true,
-        checkoutUrl: session.url,
         orderId: order._id,
+        razorpayOrderId: razorpayOrder.id,
+        amount: amountInPaise,
+        currency: "INR",
+        key: process.env.RAZORPAY_KEY_ID,
+        customerName: order.userDetails.name,
+        customerEmail: order.userDetails.email,
+        customerPhone: deliveryDetails.phone,
       });
     } catch (err) {
       res.status(400).json({
-        message: err.message || "Failed to create checkout session",
+        message: err.message || "Failed to create payment order",
         alert: false,
       });
     }
@@ -210,7 +205,7 @@ const createOrderController = ({ orderModel, productModel, stripe }) => {
   };
 
   return {
-    createCheckoutSession,
+    createPaymentOrder,
     getMyOrders,
     getAllOrders,
     getOrderById,

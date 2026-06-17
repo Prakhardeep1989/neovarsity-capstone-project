@@ -54,18 +54,17 @@ const orderSchema = new mongoose.Schema(
       default: "DRAFT",
     },
     payment: {
-      provider: { type: String, default: "STRIPE" },
+      provider: { type: String, default: "RAZORPAY" },
       status: {
         type: String,
         enum: ["PENDING", "PAID", "FAILED"],
         default: "PENDING",
       },
-      stripeSessionId: String,
-      stripePaymentIntentId: String,
+      razorpayOrderId: String,
+      razorpayPaymentId: String,
       amount: Number,
       currency: String,
       paidAt: Date,
-      receiptUrl: String,
     },
   },
   { timestamps: true }

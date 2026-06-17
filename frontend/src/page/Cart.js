@@ -4,7 +4,11 @@ import CartProduct from "../component/cartProduct";
 import emptyCartImage from "../assest/empty.gif";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { createCheckoutSession } from "../utility/orderApi";
+import {
+  createPaymentOrder,
+  loadRazorpayScript,
+  verifyPayment,
+} from "../utility/orderApi";
 
 const PHONE_REGEX = /^[6-9]\d{9}$/;
 
@@ -62,7 +66,13 @@ const Cart = () => {
     }
 
     try {
-      const response = await createCheckoutSession(
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        toast("Failed to load Razorpay. Please try again.");
+        return;
+      }
+
+      const response = await createPaymentOrder(
         {
           items: productCartItem.map((item) => ({
             productId: item._id,
@@ -79,12 +89,52 @@ const Cart = () => {
         user.token
       );
 
-      if (response.alert && response.checkoutUrl) {
-        toast("Redirecting to payment gateway…");
-        window.location.href = response.checkoutUrl;
-      } else {
-        toast(response.message || "Failed to start checkout");
+      if (!response.alert) {
+        toast(response.message || "Failed to start payment");
+        return;
       }
+
+      const razorpayKey =
+        response.key || process.env.REACT_APP_RAZORPAY_KEY_ID;
+
+      const options = {
+        key: razorpayKey,
+        amount: response.amount,
+        currency: response.currency,
+        name: "HOMELY Meals",
+        description: "Order payment",
+        order_id: response.razorpayOrderId,
+        handler: async (paymentResponse) => {
+          const verifyRes = await verifyPayment(
+            {
+              orderId: response.orderId,
+              razorpay_order_id: paymentResponse.razorpay_order_id,
+              razorpay_payment_id: paymentResponse.razorpay_payment_id,
+              razorpay_signature: paymentResponse.razorpay_signature,
+            },
+            user.token
+          );
+
+          if (verifyRes.alert) {
+            toast("Payment successful!");
+            navigate("/payment-success");
+          } else {
+            toast(verifyRes.message || "Payment verification failed");
+          }
+        },
+        prefill: {
+          name: response.customerName,
+          email: response.customerEmail,
+          contact: response.customerPhone,
+        },
+        theme: { color: "#dc2626" },
+        modal: {
+          ondismiss: () => toast("Payment cancelled"),
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
     } catch {
       toast("Failed to connect to payment server");
     }

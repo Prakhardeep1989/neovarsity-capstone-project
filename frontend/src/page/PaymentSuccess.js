@@ -21,7 +21,7 @@ const PaymentSuccess = () => {
           Thank you for ordering from HOMELY Meals.
         </p>
         <p className="text-slate-500 text-sm mb-6">
-          Your order is being processed. Payment confirmation may take a moment.
+          Your order has been confirmed. A receipt email will arrive shortly.
           Check the <strong>Orders</strong> tab for status updates.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">

@@ -5,13 +5,36 @@ const authHeaders = (token) => ({
   Authorization: `Bearer ${token}`,
 });
 
-export const createCheckoutSession = async (payload, token) => {
-  const res = await fetch(`${API_BASE}/api/orders/create-checkout-session`, {
+export const createPaymentOrder = async (payload, token) => {
+  const res = await fetch(`${API_BASE}/api/orders/create-payment-order`, {
     method: "POST",
     headers: authHeaders(token),
     body: JSON.stringify(payload),
   });
   return res.json();
+};
+
+export const verifyPayment = async (payload, token) => {
+  const res = await fetch(`${API_BASE}/api/orders/verify-payment`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+  return res.json();
+};
+
+export const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
 };
 
 export const fetchMyOrders = async (token) => {

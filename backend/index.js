@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv").config();
-const Stripe = require("stripe");
+const Razorpay = require("razorpay");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const createAuthMiddleware = require("./middleware/auth");
@@ -10,17 +10,20 @@ const orderModel = require("./models/Order");
 const createOrderRoutes = require("./routes/orderRoutes");
 const createPaymentController = require("./controllers/paymentController");
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
 const app = express();
 app.use(cors());
 
-const paymentController = createPaymentController({ orderModel, stripe });
+const paymentController = createPaymentController({ orderModel });
 
 app.post(
-  "/api/payments/stripe/webhook",
+  "/api/payments/razorpay/webhook",
   express.raw({ type: "application/json" }),
-  paymentController.handleStripeWebhook
+  paymentController.handleRazorpayWebhook
 );
 
 app.use(express.json({ limit: "10mb" }));
@@ -106,7 +109,7 @@ const isAdminUser = (user) => user?.role === "ADMIN";
 const orderRoutes = createOrderRoutes({
   orderModel,
   productModel,
-  stripe,
+  razorpay,
   protectRoute,
   adminOnly,
   customerOnly,
@@ -314,7 +317,7 @@ app.delete("/api/products/admin/:id", protectRoute, adminOnly, async (req, res) 
 
 app.post("/save-order", async (req, res) => {
   res.status(410).send({
-    message: "Deprecated. Orders are created via POST /api/orders/create-checkout-session",
+    message: "Deprecated. Use POST /api/orders/create-payment-order",
     alert: false,
   });
 });
@@ -328,7 +331,7 @@ app.get("/orders/:email", async (req, res) => {
 
 app.post("/create-checkout-session", async (req, res) => {
   res.status(410).send({
-    message: "Deprecated. Use POST /api/orders/create-checkout-session",
+    message: "Deprecated. Use POST /api/orders/create-payment-order",
     alert: false,
   });
 });

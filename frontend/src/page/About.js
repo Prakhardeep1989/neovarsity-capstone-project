@@ -46,7 +46,7 @@ const About = () => {
         <ol className="list-decimal list-inside space-y-2 text-slate-600">
           <li>Browse our menu and filter by category</li>
           <li>Add items to your cart and adjust quantities</li>
-          <li>Sign in and pay securely via Stripe</li>
+          <li>Sign in and pay securely via Razorpay</li>
           <li>Enjoy fresh homely meals delivered to your home</li>
         </ol>
       </div>
