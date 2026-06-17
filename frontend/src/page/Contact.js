@@ -1,22 +1,41 @@
 import React, { useState } from "react";
 import { toast } from "react-hot-toast";
 import { BUSINESS_INFO } from "../utility/businessInfo";
+import { sendContactMessage } from "../utility/contactApi";
 
 const Contact = () => {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (form.name && form.email && form.message) {
-      toast("Thank you! We will get back to you soon.");
-      setForm({ name: "", email: "", message: "" });
-    } else {
+
+    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
       toast("Please fill in all fields");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const response = await sendContactMessage({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        message: form.message.trim(),
+      });
+
+      toast(response.message);
+      if (response.alert) {
+        setForm({ name: "", email: "", message: "" });
+      }
+    } catch {
+      toast("Failed to send message. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -69,7 +88,8 @@ const Contact = () => {
             name="name"
             value={form.name}
             onChange={handleChange}
-            className="bg-slate-200 px-3 py-2 rounded focus:outline-blue-300"
+            disabled={submitting}
+            className="bg-slate-200 px-3 py-2 rounded focus:outline-blue-300 disabled:opacity-60"
           />
           <label
             htmlFor="email"
@@ -83,7 +103,8 @@ const Contact = () => {
             name="email"
             value={form.email}
             onChange={handleChange}
-            className="bg-slate-200 px-3 py-2 rounded focus:outline-blue-300"
+            disabled={submitting}
+            className="bg-slate-200 px-3 py-2 rounded focus:outline-blue-300 disabled:opacity-60"
           />
           <label
             htmlFor="message"
@@ -97,13 +118,15 @@ const Contact = () => {
             rows={4}
             value={form.message}
             onChange={handleChange}
-            className="bg-slate-200 px-3 py-2 rounded resize-none focus:outline-blue-300"
+            disabled={submitting}
+            className="bg-slate-200 px-3 py-2 rounded resize-none focus:outline-blue-300 disabled:opacity-60"
           />
           <button
             type="submit"
-            className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 rounded mt-2"
+            disabled={submitting}
+            className="bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white font-medium py-2 rounded mt-2"
           >
-            Send Message
+            {submitting ? "Sending…" : "Send Message"}
           </button>
         </form>
       </div>

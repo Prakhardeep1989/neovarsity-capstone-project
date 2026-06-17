@@ -9,6 +9,7 @@ const createAuthMiddleware = require("./middleware/auth");
 const orderModel = require("./models/Order");
 const createOrderRoutes = require("./routes/orderRoutes");
 const createPaymentController = require("./controllers/paymentController");
+const { submitContact } = require("./controllers/contactController");
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -115,6 +116,8 @@ const orderRoutes = createOrderRoutes({
   customerOnly,
 });
 app.use("/api/orders", orderRoutes);
+
+app.post("/api/contact", submitContact);
 
 app.get("/", (req, res) => {
   res.send("HOMELY Meals API is running");

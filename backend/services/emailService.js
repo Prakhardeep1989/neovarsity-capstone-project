@@ -1,5 +1,12 @@
 const { Resend } = require("resend");
 
+const escapeHtml = (value) =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
 const buildReceiptHtml = (order) => {
   const itemsHtml = order.items
     .map(
@@ -94,4 +101,57 @@ const sendOrderReceiptEmail = async (order) => {
   }
 };
 
-module.exports = { sendOrderReceiptEmail, buildReceiptHtml };
+const sendContactEmail = async ({ name, email, message }) => {
+  const to = process.env.CONTACT_EMAIL || "coolprakhar06@gmail.com";
+  const subject = `HOMELY Meals — Contact request from ${name}`;
+  const safeName = escapeHtml(name);
+  const safeEmail = escapeHtml(email);
+  const safeMessage = escapeHtml(message).replace(/\n/g, "<br>");
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+      <h1 style="color:#dc2626;">HOMELY Meals</h1>
+      <h2>Quick connect request</h2>
+      <p>
+        <strong>${safeName}</strong> (<a href="mailto:${safeEmail}">${safeEmail}</a>)
+        needs a quick connect with respect to the message below:
+      </p>
+      <div style="background:#f1f5f9;padding:16px;border-radius:8px;margin:16px 0;line-height:1.5;">
+        ${safeMessage}
+      </div>
+      <p style="color:#64748b;font-size:14px;">Reply directly to ${safeEmail} to follow up.</p>
+    </div>
+  `;
+  const from =
+    process.env.FROM_EMAIL || "HOMELY Meals <homely_meals@resend.dev>";
+
+  if (!process.env.RESEND_API_KEY) {
+    console.log("[EMAIL] RESEND_API_KEY not configured.");
+    console.log(`[EMAIL TODO] Contact message from ${name} <${email}> would be sent to ${to}`);
+    return { sent: false, reason: "Email not configured" };
+  }
+
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    const { data, error } = await resend.emails.send({
+      from,
+      to: [to],
+      replyTo: email,
+      subject,
+      html,
+    });
+
+    if (error) {
+      console.error("[EMAIL] Resend contact error:", error);
+      return { sent: false, reason: error.message || JSON.stringify(error) };
+    }
+
+    console.log(`[EMAIL] Contact message from ${email} sent to ${to} (id: ${data.id})`);
+    return { sent: true, id: data.id };
+  } catch (err) {
+    console.error("[EMAIL] Failed to send contact message:", err.message);
+    return { sent: false, reason: err.message };
+  }
+};
+
+module.exports = { sendOrderReceiptEmail, buildReceiptHtml, sendContactEmail };
