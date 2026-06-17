@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { BRAND_LOGO } from "../utility/productImages";
 import { HiOutlineUserCircle } from "react-icons/hi";
@@ -9,11 +9,28 @@ import { toast } from "react-hot-toast";
 
 const Header = () => {
   const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
   const userData = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
   const isLoggedIn = Boolean(userData.email);
   const isAdmin = Boolean(userData.isAdmin);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showMenu]);
 
   const handleShowMenu = () => {
     setShowMenu((preve) => !preve);
@@ -46,24 +63,12 @@ const Header = () => {
         <div className="flex items-center gap-4 md:gap-7">
           <nav className="gap-4 md:gap-6 text-base md:text-lg hidden md:flex items-center">
             <Link to={""}>Home</Link>
-            <Link to={"menu"}>Menu</Link>
             <Link to={"about"}>About</Link>
+            <Link to={"menu"}>Menu</Link>
             <Link to={"contact"}>Contact</Link>
             {isLoggedIn && isAdmin && (
               <Link to={"newproduct"} className="text-red-600 font-medium">
                 New Product
-              </Link>
-            )}
-            {isLoggedIn ? (
-              <button
-                onClick={handleLogout}
-                className="text-red-500 hover:text-red-600 font-medium"
-              >
-                Logout ({userData.firstName})
-              </button>
-            ) : (
-              <Link to={"login"} className="text-red-500 font-medium">
-                Login
               </Link>
             )}
           </nav>
@@ -75,8 +80,11 @@ const Header = () => {
               </div>
             </Link>
           </div>
-          <div className=" text-slate-600" onClick={handleShowMenu}>
-            <div className="text-3xl cursor-pointer w-8 h-8 rounded-full overflow-hidden drop-shadow-md">
+          <div className=" text-slate-600 relative" ref={menuRef}>
+            <div
+              className="text-3xl cursor-pointer w-8 h-8 rounded-full overflow-hidden drop-shadow-md"
+              onClick={handleShowMenu}
+            >
               {userData.image ? (
                 <img
                   src={userData.image}
@@ -88,44 +96,47 @@ const Header = () => {
               )}
             </div>
             {showMenu && (
-              <div className="absolute right-2 top-12 bg-white py-2 shadow drop-shadow-md flex flex-col min-w-[140px] text-center z-50">
-                {isLoggedIn && isAdmin && (
-                  <Link
-                    to={"newproduct"}
-                    className="whitespace-nowrap cursor-pointer px-2 py-1 hover:bg-slate-100"
-                    onClick={() => setShowMenu(false)}
-                  >
-                    New Product
-                  </Link>
-                )}
-
+              <div className="absolute right-2 top-12 bg-white py-2 shadow drop-shadow-md flex flex-col min-w-[180px] text-left z-50">
                 {isLoggedIn ? (
-                  <p
-                    className="cursor-pointer text-white px-2 py-1 bg-red-500 hover:bg-red-600"
-                    onClick={handleLogout}
-                  >
-                    Logout ({userData.firstName})
-                  </p>
+                  <>
+                    <div className="px-3 py-2 border-b border-slate-100">
+                      <p className="text-sm font-semibold text-slate-800">Profile</p>
+                      <p className="text-sm text-slate-600 mt-1">
+                        {userData.firstName} {userData.lastName}
+                      </p>
+                      <p className="text-xs text-slate-500 break-all">{userData.email}</p>
+                      <p className="text-xs text-slate-500 mt-1 capitalize">
+                        {userData.role?.toLowerCase() || "customer"}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="cursor-pointer text-white px-3 py-2 bg-red-500 hover:bg-red-600 text-sm text-center"
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </button>
+                  </>
                 ) : (
                   <Link
                     to={"login"}
-                    className="whitespace-nowrap cursor-pointer px-2 py-1 hover:bg-slate-100"
+                    className="whitespace-nowrap cursor-pointer px-3 py-2 hover:bg-slate-100 text-sm"
                     onClick={() => setShowMenu(false)}
                   >
                     Login
                   </Link>
                 )}
                 <nav className="text-base md:text-lg flex flex-col md:hidden border-t mt-1 pt-1">
-                  <Link to={""} className="px-2 py-1 hover:bg-slate-100">
+                  <Link to={""} className="px-3 py-1 hover:bg-slate-100">
                     Home
                   </Link>
-                  <Link to={"menu"} className="px-2 py-1 hover:bg-slate-100">
+                  <Link to={"menu"} className="px-3 py-1 hover:bg-slate-100">
                     Menu
                   </Link>
-                  <Link to={"about"} className="px-2 py-1 hover:bg-slate-100">
+                  <Link to={"about"} className="px-3 py-1 hover:bg-slate-100">
                     About
                   </Link>
-                  <Link to={"contact"} className="px-2 py-1 hover:bg-slate-100">
+                  <Link to={"contact"} className="px-3 py-1 hover:bg-slate-100">
                     Contact
                   </Link>
                 </nav>

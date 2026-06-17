@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ImagetoBase64 } from "../utility/ImagetoBase64";
 import { toast } from "react-hot-toast";
 
-const Singup = () => {
+const Signup = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -173,7 +173,7 @@ const Singup = () => {
           </button>
         </form>
         <p className="text-left text-sm mt-2">
-          Already have account ?{" "}
+          Already have an account?{" "}
           <Link to={"/login"} className="text-red-500 underline">
             Login
           </Link>
@@ -183,4 +183,4 @@ const Singup = () => {
   );
 };
 
-export default Singup;
+export default Signup;
