@@ -107,14 +107,14 @@ RATE_LIMIT_MAX=200
 RAZORPAY_KEY_ID=rzp_test_...
 RAZORPAY_KEY_SECRET=<same as local>
 RAZORPAY_WEBHOOK_SECRET=<random secret>
-WEBHOOK_URL=https://homely-meals-api-stage.onrender.com/api/payments/razorpay/webhook
+WEBHOOK_URL=https://homely-meals-api.onrender.com/api/payments/razorpay/webhook
 RESEND_API_KEY=<same as local>
 FROM_EMAIL=HOMELY Meals <homely_meals@resend.dev>
 CONTACT_EMAIL=<same as local>
 RESEND_SANDBOX_EMAIL=<same as local>
 ```
 
-After deploy, verify: `GET https://homely-meals-api-stage.onrender.com/` → `HOMELY Meals API is running`
+After deploy, verify: `GET https://homely-meals-api.onrender.com/` → `HOMELY Meals API is running`
 
 **Free tier note:** Service sleeps after ~15 min idle; first request may take 30–60s (cold start).
 
@@ -128,7 +128,7 @@ After deploy, verify: `GET https://homely-meals-api-stage.onrender.com/` → `HO
 **Environment variables** — copy from `frontend/.env.stage` (Environment: **Production**):
 
 ```env
-REACT_APP_SERVER_DOMIN=https://homely-meals-api-stage.onrender.com
+REACT_APP_SERVER_DOMIN=https://homely-meals-api.onrender.com
 REACT_APP_RAZORPAY_KEY_ID=rzp_test_...
 ```
 
@@ -150,7 +150,7 @@ npm run setup:webhook:stage
 
 Or manually in [Razorpay Dashboard → Webhooks (Test Mode)](https://dashboard.razorpay.com/app/webhooks):
 
-- URL: `https://homely-meals-api-stage.onrender.com/api/payments/razorpay/webhook`
+- URL: `https://homely-meals-api.onrender.com/api/payments/razorpay/webhook`
 - Secret: same as `RAZORPAY_WEBHOOK_SECRET` on Render
 - Events: `payment.captured`, `payment.failed`, `order.paid`
 
