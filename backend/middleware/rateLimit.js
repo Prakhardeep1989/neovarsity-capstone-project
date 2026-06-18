@@ -18,7 +18,8 @@ const generalLimiter = rateLimit({
     message: "Too many requests, please try again later",
     alert: false,
   },
-  skip: (req) => req.path === "/api/payments/razorpay/webhook",
+  skip: (req) =>
+    req.method === "OPTIONS" || req.path === "/api/payments/razorpay/webhook",
 });
 
 const authLimiter = createLimiter({

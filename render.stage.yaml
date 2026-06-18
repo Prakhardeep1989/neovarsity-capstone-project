@@ -28,6 +28,8 @@ services:
         sync: false
       - key: FRONTEND_URL
         sync: false
+      - key: CORS_ALLOW_VERCEL_PREVIEWS
+        value: "true"
       - key: RATE_LIMIT_MAX
         value: "200"
       - key: RESEND_API_KEY
