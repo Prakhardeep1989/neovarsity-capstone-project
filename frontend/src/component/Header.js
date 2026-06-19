@@ -162,6 +162,13 @@ const Header = () => {
                         {userData.role?.toLowerCase() || "customer"}
                       </p>
                     </div>
+                    <NavLink
+                      to="/change-password"
+                      className="px-3 py-2 text-sm text-stone-700 hover:bg-orange-50 transition-colors"
+                      onClick={() => setShowMenu(false)}
+                    >
+                      Change password
+                    </NavLink>
                     <button
                       type="button"
                       className="cursor-pointer text-white px-3 py-2 bg-orange-600 hover:bg-orange-700 text-sm text-center transition-colors"

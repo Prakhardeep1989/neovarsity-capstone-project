@@ -34,4 +34,15 @@ const contactLimiter = createLimiter({
   message: "Too many contact form submissions, please try again later",
 });
 
-module.exports = { generalLimiter, authLimiter, contactLimiter };
+const passwordResetLimiter = createLimiter({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: "Too many password reset attempts, please try again later",
+});
+
+module.exports = {
+  generalLimiter,
+  authLimiter,
+  contactLimiter,
+  passwordResetLimiter,
+};

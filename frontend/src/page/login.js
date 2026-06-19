@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { LOGIN_IMAGE } from "../utility/productImages";
 import { BiShow, BiHide } from "react-icons/bi";
 import { Link, useNavigate } from "react-router-dom";
@@ -7,14 +7,16 @@ import { useDispatch } from "react-redux";
 import { loginRedux } from "../redux/userSlice";
 import PageLayout from "../component/PageLayout";
 import FoodImage from "../component/FoodImage";
+import LoginCaptcha from "../component/LoginCaptcha";
+import { login, isCaptchaEnabled } from "../utility/authApi";
 
 const Login = () => {
   const navigate = useNavigate();
-
   const dispatch = useDispatch();
+  const captchaRef = useRef(null);
 
   const [showPassword, setShowPassword] = useState(false);
-
+  const [captchaToken, setCaptchaToken] = useState(null);
   const [data, setData] = useState({
     email: "",
     password: "",
@@ -34,22 +36,27 @@ const Login = () => {
     });
   };
 
+  const resetCaptcha = () => {
+    setCaptchaToken(null);
+    captchaRef.current?.reset();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { email, password } = data;
-    if (email && password) {
-      const fetchData = await fetch(
-        `${process.env.REACT_APP_SERVER_DOMIN}/login`,
-        {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-          },
-          body: JSON.stringify(data),
-        }
-      );
 
-      const dataRes = await fetchData.json();
+    if (!email || !password) {
+      alert("Please Enter required fields");
+      return;
+    }
+
+    if (isCaptchaEnabled() && !captchaToken) {
+      toast("Please complete the captcha verification");
+      return;
+    }
+
+    try {
+      const dataRes = await login({ email, password, captchaToken });
 
       toast(dataRes.message);
 
@@ -58,9 +65,12 @@ const Login = () => {
         setTimeout(() => {
           navigate("/");
         }, 1000);
+      } else {
+        resetCaptcha();
       }
-    } else {
-      alert("Please Enter required fields");
+    } catch {
+      toast("Login failed. Please try again.");
+      resetCaptcha();
     }
   };
 
@@ -104,6 +114,17 @@ const Login = () => {
               {showPassword ? <BiShow /> : <BiHide />}
             </span>
           </div>
+
+          <p className="text-right text-sm mb-1">
+            <Link to="/forgot-password" className="text-red-500 underline">
+              Forgot password?
+            </Link>
+          </p>
+
+          <LoginCaptcha
+            captchaRef={captchaRef}
+            onChange={(token) => setCaptchaToken(token)}
+          />
 
           <button className="w-full max-w-[150px] m-auto  bg-red-500 hover:bg-red-600 cursor-pointer  text-white text-xl font-medium text-center py-1 rounded-full mt-4">
             Login

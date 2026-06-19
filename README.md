@@ -13,6 +13,7 @@ A full-stack MERN restaurant ordering application for **HOMELY Meals**, a cloud 
 - Order lifecycle: DRAFT → ORDERED → PREPARING → OUT_FOR_DELIVERY → DELIVERED
 - Order receipt emails via **Resend**
 - Customer order history and admin order management
+- HTTP security headers via **Helmet** (X-Content-Type-Options, HSTS, etc.)
 - Responsive design with Tailwind CSS
 - Redux Toolkit state management
 
@@ -21,7 +22,7 @@ A full-stack MERN restaurant ordering application for **HOMELY Meals**, a cloud 
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React.js, Tailwind CSS, Redux Toolkit |
-| Backend | Node.js, Express.js |
+| Backend | Node.js, Express.js, Helmet |
 | Database | MongoDB |
 | Payments | Razorpay |
 | Email | Resend |
@@ -471,7 +472,10 @@ Run `npm run setup:webhook` once with **live** API keys, or add the webhook manu
 | Method | Route | Description |
 |--------|-------|-------------|
 | POST | `/signup` | Register (role: CUSTOMER) |
-| POST | `/login` | Login, returns JWT |
+| POST | `/login` | Login, returns JWT (optional reCAPTCHA when configured) |
+| POST | `/forgot-password` | Request password reset email |
+| POST | `/reset-password` | Set new password with reset token from email |
+| POST | `/change-password` | Change password (JWT required) |
 
 ### Products
 
@@ -553,5 +557,6 @@ Log out and log back in to refresh the JWT.
 - **Payment confirmation** uses two paths: primary `POST /api/orders/verify-payment` (browser callback) and backup `POST /api/payments/razorpay/webhook`. Both call the same `markOrderAsPaid()` helper; duplicate events are ignored when `payment.status` is already **PAID**.
 - **Webhook setup:** set `WEBHOOK_URL`, `RAZORPAY_WEBHOOK_SECRET`, and run `npm run setup:webhook` from `backend/` (see [Razorpay Webhook Setup](#razorpay-webhook-setup)). For local dev, keep ngrok running on port 8080.
 - Backend calculates order totals from MongoDB product prices (frontend prices are not trusted).
+- **Security headers:** the API uses [Helmet](https://helmetjs.github.io/) middleware (`backend/middleware/security.js`) for standard HTTP headers (e.g. `X-Content-Type-Options`, `Strict-Transport-Security`). CORS and rate limiting remain separate; the Razorpay webhook route is unchanged.
 - Use Razorpay **test mode** keys (`rzp_test_...`) during development.
 - Resend sandbox: with `homely_meals@resend.dev`, emails can only be delivered to addresses allowed by Resend. Set `RESEND_SANDBOX_EMAIL` to your Resend account email so order receipts to other customers are redirected in dev (with a notice in the email body). For production, verify a domain at [resend.com/domains](https://resend.com/domains) and update `FROM_EMAIL`.

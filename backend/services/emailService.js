@@ -262,4 +262,59 @@ const sendContactEmail = async ({ name, email, message }) => {
   }
 };
 
-module.exports = { sendOrderReceiptEmail, buildReceiptHtml, sendContactEmail };
+const buildPasswordResetHtml = ({ firstName, resetUrl }) => {
+  const safeName = escapeHtml(firstName || "there");
+  const safeUrl = escapeHtml(resetUrl);
+
+  return `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1e293b;">
+      <h1 style="color:#dc2626;margin-bottom:4px;">HOMELY Meals</h1>
+      <p style="color:#64748b;margin-top:0;">Password reset request</p>
+      <p>Hi ${safeName},</p>
+      <p>We received a request to reset your password. Click the button below to choose a new password. This link expires in 1 hour.</p>
+      <p style="margin:24px 0;">
+        <a href="${safeUrl}" style="background:#dc2626;color:#fff;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600;display:inline-block;">
+          Reset password
+        </a>
+      </p>
+      <p style="color:#64748b;font-size:14px;">If you did not request this, you can safely ignore this email. Your password will not change.</p>
+      <p style="color:#64748b;font-size:12px;word-break:break-all;">Or copy this link: ${safeUrl}</p>
+    </div>
+  `;
+};
+
+const sendPasswordResetEmail = async ({ email, firstName, resetToken }) => {
+  const frontendUrl = (process.env.FRONTEND_URL || "http://localhost:3000").replace(
+    /\/$/,
+    ""
+  );
+  const resetUrl = `${frontendUrl}/reset-password?token=${encodeURIComponent(resetToken)}`;
+  const subject = "HOMELY Meals — Reset your password";
+  const html = buildPasswordResetHtml({ firstName, resetUrl });
+
+  if (!process.env.RESEND_API_KEY) {
+    console.log("[EMAIL] RESEND_API_KEY not configured.");
+    console.log(`[EMAIL TODO] Password reset for ${email}: ${resetUrl}`);
+    return { sent: false, reason: "Email not configured", resetUrl };
+  }
+
+  try {
+    const result = await sendEmail({ to: email, subject, html });
+
+    if (result.sent) {
+      console.log(`[EMAIL] Password reset sent to ${email} (id: ${result.id})`);
+    }
+
+    return result;
+  } catch (err) {
+    console.error("[EMAIL] Failed to send password reset:", err.message);
+    return { sent: false, reason: err.message };
+  }
+};
+
+module.exports = {
+  sendOrderReceiptEmail,
+  buildReceiptHtml,
+  sendContactEmail,
+  sendPasswordResetEmail,
+};

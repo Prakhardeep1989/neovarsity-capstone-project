@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import CartProduct from "../component/cartProduct";
-import { EMPTY_CART_IMAGE } from "../utility/productImages";
-import FoodImage from "../component/FoodImage";
+import emptyCartImage from "../assest/empty.gif";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import {
@@ -271,12 +270,7 @@ const Cart = () => {
         </div>
       ) : (
         <div className="flex w-full justify-center items-center flex-col py-10">
-          <FoodImage
-            src={EMPTY_CART_IMAGE}
-            alt="Empty cart"
-            className="w-full max-w-sm h-64 object-cover"
-            rounded="rounded-2xl"
-          />
+          <img src={emptyCartImage} alt="Empty cart" className="w-full max-w-sm" />
           <p className="text-slate-500 text-3xl font-bold">Empty Cart</p>
         </div>
       )}

@@ -6,15 +6,20 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const createAuthMiddleware = require("./middleware/auth");
 const corsMiddleware = require("./middleware/cors");
+const securityMiddleware = require("./middleware/security");
 const {
   generalLimiter,
   authLimiter,
   contactLimiter,
+  passwordResetLimiter,
 } = require("./middleware/rateLimit");
 const orderModel = require("./models/Order");
 const createOrderRoutes = require("./routes/orderRoutes");
 const createPaymentController = require("./controllers/paymentController");
 const { submitContact } = require("./controllers/contactController");
+const { sendPasswordResetEmail } = require("./services/emailService");
+const { verifyCaptcha } = require("./utils/captcha");
+const { generateResetToken, hashResetToken } = require("./utils/passwordReset");
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -23,6 +28,7 @@ const razorpay = new Razorpay({
 
 const app = express();
 
+app.use(securityMiddleware);
 app.use(corsMiddleware);
 app.use(generalLimiter);
 
@@ -62,6 +68,8 @@ const userSchema = mongoose.Schema({
     enum: ["CUSTOMER", "ADMIN"],
     default: "CUSTOMER",
   },
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
 });
 
 const userModel = mongoose.model("user", userSchema);
@@ -194,10 +202,15 @@ app.post("/signup", authLimiter, async (req, res) => {
 
 app.post("/login", authLimiter, async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, captchaToken } = req.body;
 
     if (!email || !password) {
       return res.send({ message: "Please enter email and password", alert: false });
+    }
+
+    const captchaResult = await verifyCaptcha(captchaToken);
+    if (!captchaResult.valid) {
+      return res.send({ message: captchaResult.message, alert: false });
     }
 
     const result = await userModel.findOne({ email });
@@ -239,6 +252,124 @@ app.post("/login", authLimiter, async (req, res) => {
     });
   } catch (err) {
     res.status(500).send({ message: "Login failed", alert: false });
+  }
+});
+
+app.post("/forgot-password", passwordResetLimiter, async (req, res) => {
+  const genericMessage =
+    "If an account exists with that email, a password reset link has been sent.";
+
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.send({ message: "Please enter your email address", alert: false });
+    }
+
+    const user = await userModel.findOne({ email });
+
+    if (user) {
+      const { token, hashedToken, expiresAt } = generateResetToken();
+      user.resetPasswordToken = hashedToken;
+      user.resetPasswordExpires = expiresAt;
+      await user.save();
+
+      await sendPasswordResetEmail({
+        email: user.email,
+        firstName: user.firstName,
+        resetToken: token,
+      });
+    }
+
+    res.send({ message: genericMessage, alert: true });
+  } catch (err) {
+    console.error("[AUTH] Forgot password error:", err.message);
+    res.status(500).send({ message: "Unable to process request", alert: false });
+  }
+});
+
+app.post("/reset-password", passwordResetLimiter, async (req, res) => {
+  try {
+    const { token, password, confirmPassword } = req.body;
+
+    if (!token || !password || !confirmPassword) {
+      return res.send({ message: "Please enter all required fields", alert: false });
+    }
+
+    if (password !== confirmPassword) {
+      return res.send({
+        message: "Password and confirm password do not match",
+        alert: false,
+      });
+    }
+
+    const hashedToken = hashResetToken(token);
+    const user = await userModel.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: new Date() },
+    });
+
+    if (!user) {
+      return res.send({
+        message: "Invalid or expired reset link. Please request a new one.",
+        alert: false,
+      });
+    }
+
+    user.password = await bcrypt.hash(password, SALT_ROUNDS);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.send({ message: "Password reset successfully. You can now log in.", alert: true });
+  } catch (err) {
+    console.error("[AUTH] Reset password error:", err.message);
+    res.status(500).send({ message: "Password reset failed", alert: false });
+  }
+});
+
+app.post("/change-password", authLimiter, protectRoute, async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.send({ message: "Please enter all required fields", alert: false });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.send({
+        message: "New password and confirm password do not match",
+        alert: false,
+      });
+    }
+
+    const user = await userModel.findById(req.user._id);
+    if (!user) {
+      return res.status(401).send({ message: "User not found", alert: false });
+    }
+
+    const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!passwordMatch) {
+      return res.send({ message: "Current password is incorrect", alert: false });
+    }
+
+    const samePassword = await bcrypt.compare(newPassword, user.password);
+    if (samePassword) {
+      return res.send({
+        message: "New password must be different from your current password",
+        alert: false,
+      });
+    }
+
+    user.password = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.send({ message: "Password changed successfully", alert: true });
+  } catch (err) {
+    console.error("[AUTH] Change password error:", err.message);
+    res.status(500).send({ message: "Password change failed", alert: false });
   }
 });
 
