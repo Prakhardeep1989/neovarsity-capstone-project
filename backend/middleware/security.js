@@ -1,7 +1,13 @@
 const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
 
-const securityMiddleware = helmet({
+const securityHeaders = helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
 });
 
-module.exports = securityMiddleware;
+const sanitizeInput = mongoSanitize({
+  replaceWith: "_",
+});
+
+module.exports = securityHeaders;
+module.exports.sanitizeInput = sanitizeInput;

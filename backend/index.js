@@ -6,7 +6,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const createAuthMiddleware = require("./middleware/auth");
 const corsMiddleware = require("./middleware/cors");
-const securityMiddleware = require("./middleware/security");
+const securityHeaders = require("./middleware/security");
+const sanitizeInput = securityHeaders.sanitizeInput;
 const {
   generalLimiter,
   authLimiter,
@@ -28,7 +29,7 @@ const razorpay = new Razorpay({
 
 const app = express();
 
-app.use(securityMiddleware);
+app.use(securityHeaders);
 app.use(corsMiddleware);
 app.use(generalLimiter);
 
@@ -41,6 +42,7 @@ app.post(
 );
 
 app.use(express.json({ limit: "10mb" }));
+app.use(sanitizeInput);
 
 const PORT = process.env.PORT || 8080;
 const SALT_ROUNDS = 10;

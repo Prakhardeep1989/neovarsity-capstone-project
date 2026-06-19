@@ -14,6 +14,7 @@ A full-stack MERN restaurant ordering application for **HOMELY Meals**, a cloud 
 - Order receipt emails via **Resend**
 - Customer order history and admin order management
 - HTTP security headers via **Helmet** (X-Content-Type-Options, HSTS, etc.)
+- NoSQL injection protection via **express-mongo-sanitize**
 - Responsive design with Tailwind CSS
 - Redux Toolkit state management
 
@@ -22,7 +23,7 @@ A full-stack MERN restaurant ordering application for **HOMELY Meals**, a cloud 
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React.js, Tailwind CSS, Redux Toolkit |
-| Backend | Node.js, Express.js, Helmet |
+| Backend | Node.js, Express.js, Helmet, express-mongo-sanitize |
 | Database | MongoDB |
 | Payments | Razorpay |
 | Email | Resend |
@@ -558,5 +559,6 @@ Log out and log back in to refresh the JWT.
 - **Webhook setup:** set `WEBHOOK_URL`, `RAZORPAY_WEBHOOK_SECRET`, and run `npm run setup:webhook` from `backend/` (see [Razorpay Webhook Setup](#razorpay-webhook-setup)). For local dev, keep ngrok running on port 8080.
 - Backend calculates order totals from MongoDB product prices (frontend prices are not trusted).
 - **Security headers:** the API uses [Helmet](https://helmetjs.github.io/) middleware (`backend/middleware/security.js`) for standard HTTP headers (e.g. `X-Content-Type-Options`, `Strict-Transport-Security`). CORS and rate limiting remain separate; the Razorpay webhook route is unchanged.
+- **NoSQL injection protection:** [express-mongo-sanitize](https://github.com/fiznool/express-mongo-sanitize) runs after `express.json()` and strips MongoDB operator keys (e.g. `$gt`, `$ne`) from `req.body`, `req.query`, and `req.params`. It does not run on the Razorpay webhook route, which uses raw body parsing for signature verification.
 - Use Razorpay **test mode** keys (`rzp_test_...`) during development.
 - Resend sandbox: with `homely_meals@resend.dev`, emails can only be delivered to addresses allowed by Resend. Set `RESEND_SANDBOX_EMAIL` to your Resend account email so order receipts to other customers are redirected in dev (with a notice in the email body). For production, verify a domain at [resend.com/domains](https://resend.com/domains) and update `FROM_EMAIL`.
